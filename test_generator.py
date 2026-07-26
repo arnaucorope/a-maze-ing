@@ -1,14 +1,23 @@
-from mazegen import MazeGenerator
+from mazegen import MazeGenerator, Wall
 
 
 generator = MazeGenerator(
-    width=4,
-    height=3,
+    width=9,
+    height=9,
     entry=(0, 0),
-    exit_=(3, 2),
+    exit_=(2, 2),
     perfect=True,
 )
-generator._grid[0][0] = 99
-print(generator.width)
-print(generator.height)
-print(generator._grid)
+
+generator.generate()
+
+for y, row in enumerate(generator._grid):
+    line = ""
+
+    for x, cell in enumerate(row):
+        if (x, y) in generator._pattern_cells:
+            line += "# "
+        else:
+            line += ". "
+
+    print(line)

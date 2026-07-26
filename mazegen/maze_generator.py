@@ -1,3 +1,23 @@
+from enum import IntFlag
+import random
+
+
+class Wall(IntFlag):
+    NORTH = 1
+    EAST = 2
+    SOUTH = 4
+    WEST = 8
+
+    def opposite(self) -> "Wall":
+        opposites: dict[Wall, Wall] = {
+                Wall.NORTH: Wall.SOUTH,
+                Wall.EAST: Wall.WEST,
+                Wall.SOUTH: Wall.NORTH,
+                Wall.WEST: Wall.EAST,
+                }
+        return opposites[self]
+
+
 class MazeGenerator:
     def __init__(
         self,
@@ -17,6 +37,7 @@ class MazeGenerator:
         self.seed = seed
         self.algorithm = algorithm
         self._grid = self._create_grid()
+        self._pattern_cells: set[tuple[int, int]] = set()
 
     def _create_grid(self) -> list[list[int]]:
         grid: list[list[int]] = []
@@ -39,17 +60,124 @@ class MazeGenerator:
             self,
             x: int,
             y: int,
-            ) -> list[tuple[str, tuple[int, int]]]:
-        cardinal_directions: list[tuple[str, int, int]] = [
-                ("N", x, y - 1),
-                ("E", x + 1, y),
-                ("S", x, y + 1),
-                ("W", x - 1, y),
+            ) -> list[tuple[Wall, tuple[int, int]]]:
+        cardinal_directions: list[tuple[Wall, int, int]] = [
+                (Wall.NORTH, x, y - 1),
+                (Wall.EAST, x + 1, y),
+                (Wall.SOUTH, x, y + 1),
+                (Wall.WEST, x - 1, y),
                 ]
-        neighbours: list[tuple[str, tuple[int, int]]] = []
+        neighbours: list[tuple[Wall, tuple[int, int]]] = []
 
         for direction, neighbour_x, neighbour_y in cardinal_directions:
             if self._is_inside(neighbour_x, neighbour_y):
                 neighbours.append((direction, (neighbour_x, neighbour_y)))
 
         return neighbours
+
+    def _open_wall(
+            self,
+            current: tuple[int, int],
+            direction: Wall,
+            neighbour: tuple[int, int],
+            ) -> None:
+        current_x, current_y = current
+        neighbour_x, neighbour_y = neighbour
+
+        self._grid[current_y][current_x] &= ~int(direction)
+        self._grid[neighbour_y][neighbour_x] &= ~int(direction.opposite())
+
+    def _generate_dfs(self) -> None:
+        visited: set[tuple[int, int]] = set()
+        stack: list[tuple[int, int]] = []
+        rng = random.Random(self.seed)
+
+        start: tuple[int, int] = (0, 0)
+        visited.add(start)
+        stack.append(start)
+
+        while stack:
+            current = stack[-1]
+            current_x, current_y = current
+
+            neighbours = self._get_neighbours(current_x, current_y)
+            unvisited_neighbours: list[tuple[Wall, tuple[int, int]]] = []
+            for direction, coordinates in neighbours:
+                if (
+                        coordinates not in visited
+                        and coordinates not in self._pattern_cells
+                        ):
+                    unvisited_neighbours.append((direction, coordinates))
+
+            if unvisited_neighbours:
+                direction, next_cell = rng.choice(unvisited_neighbours)
+                self._open_wall(current, direction, next_cell)
+                visited.add(next_cell)
+                stack.append(next_cell)
+            else:
+                stack.pop()
+
+        expected_cells = (self.width * self.height - len(self._pattern_cells))
+        if len(visited) != expected_cells:
+            raise RuntimeError("Maze generation left unreachable cells")
+
+    def _create_42_pattern(self) -> set[tuple[int, int]]:
+        pattern: list[list[int]] = [
+            [1, 0, 0, 0, 1, 1, 1],
+            [1, 0, 0, 0, 0, 0, 1],
+            [1, 1, 1, 0, 1, 1, 1],
+            [0, 0, 1, 0, 1, 0, 0],
+            [0, 0, 1, 0, 1, 1, 1],
+            ]
+
+        pattern_height = len(pattern)
+        pattern_width = len(pattern[0])
+        if (
+                self.width < pattern_width + 2
+                or self.height < pattern_height + 2
+                ):
+            print("Error: maze too small for 42 pattern")
+            return set()
+        start_x = (self.width - pattern_width) // 2
+        start_y = (self.height - pattern_height) // 2
+
+        pattern_cells: set[tuple[int, int]] = set()
+        for y, row in enumerate(pattern):
+            for x, value in enumerate(row):
+                if value == 1:
+                    pattern_cells.add((start_x + x, start_y + y))
+        return pattern_cells
+
+    def _add_extra_passages(self) -> None:
+        rng = random.Random(self.seed)
+
+        for y in range(self.height):
+            for x in range(self.width):
+                current = (x, y)
+                if current in self._pattern_cells:
+                    continue
+                neighbours = self._get_neighbours(x, y)
+                valid_neighbours: list[tuple[Wall, tuple[int, int]]] = []
+                for direction, coordinates in neighbours:
+                    if coordinates not in self._pattern_cells:
+                        valid_neighbours.append((direction, coordinates))
+                closed_neighbours: list[tuple[Wall, tuple[int, int]]] = []
+                for direction, coordinates in valid_neighbours:
+                    if self._grid[y][x] & int(direction):
+                        closed_neighbours.append((direction, coordinates))
+                if closed_neighbours:
+                    direction, neighbour = rng.choice(closed_neighbours)
+                    self._open_wall(current, direction, neighbour)
+
+    def generate(self) -> list[list[int]]:
+        self._grid = self._create_grid()
+        self._pattern_cells = self._create_42_pattern()
+
+        if self.algorithm == "dfs":
+            self._generate_dfs()
+        else:
+            raise ValueError(f"Unknown algorithm: {self.algorithm}")
+        if not self.perfect:
+            self._add_extra_passages()
+
+        return self._grid
