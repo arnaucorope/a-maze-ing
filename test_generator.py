@@ -3,7 +3,7 @@ from mazegen import MazeGenerator, Wall
 
 generator = MazeGenerator(
     width=9,
-    height=9,
+    height=7,
     entry=(0, 0),
     exit_=(2, 2),
     perfect=True,

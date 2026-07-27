@@ -75,6 +75,46 @@ class MazeGenerator:
 
         return neighbours
 
+    def _is_open_3x3(self, start_x: int, start_y: int) -> bool:
+        for y in range(start_y, start_y + 3):
+            for x in range(start_x, start_x + 2):
+                if self._grid[y][x] & int(Wall.EAST):
+                    return False
+        for x in range(start_x, start_x + 3):
+            for y in range(start_y, start_y + 2):
+                if self._grid[y][x] & int(Wall.SOUTH):
+                    return False
+
+        return True
+    
+
+    def would_create_open_3x3(
+            self,
+            current: tuple[int, int],
+            direction: Wall,
+            neighbour: tuple[int, int],
+            ) -> bool:
+        current_x, current_y = current
+        neighbour_x, neighbour_y = neighbour
+        current_value = self._grid[current_y][current_x]
+        neighbour_value = self._grid[neighbour_y][neighbour_x]
+
+        self._open_wall(current, direction, neighbour)
+        creates_open_3x3 = False
+
+        for start_y in range(self.height - 2):
+            for start_x in range(self.width - 2):
+                if self._is_open_3x3(start_x, start_y):
+                    creates_open_3x3 = True
+                    break
+            if creates_open_3x3:
+                break
+        self._grid[current_y][current_x] = current_value
+        self._grid[neighbour_y][neighbour_x] = neighbour_value
+
+        return creates_open_3x3
+
+
     def _open_wall(
             self,
             current: tuple[int, int],
@@ -156,6 +196,8 @@ class MazeGenerator:
                 current = (x, y)
                 if current in self._pattern_cells:
                     continue
+                if self._count_open_passages(x, y) != 1:
+                    continue
                 neighbours = self._get_neighbours(x, y)
                 valid_neighbours: list[tuple[Wall, tuple[int, int]]] = []
                 for direction, coordinates in neighbours:
@@ -168,6 +210,18 @@ class MazeGenerator:
                 if closed_neighbours:
                     direction, neighbour = rng.choice(closed_neighbours)
                     self._open_wall(current, direction, neighbour)
+
+
+    def _count_open_passages(self, x: int, y: int) -> int:
+        open_passages = 0
+        neighbours = self._get_neighbours(x, y)
+
+        for direction, _ in neighbours:
+            if not (self._grid[y][x] & int(direction)):
+                open_passages += 1
+
+        return open_passages
+
 
     def generate(self) -> list[list[int]]:
         self._grid = self._create_grid()
