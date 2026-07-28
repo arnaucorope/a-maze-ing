@@ -1,21 +1,7 @@
-from enum import IntFlag
 import random
-
-
-class Wall(IntFlag):
-    NORTH = 1
-    EAST = 2
-    SOUTH = 4
-    WEST = 8
-
-    def opposite(self) -> "Wall":
-        opposites: dict[Wall, Wall] = {
-                Wall.NORTH: Wall.SOUTH,
-                Wall.EAST: Wall.WEST,
-                Wall.SOUTH: Wall.NORTH,
-                Wall.WEST: Wall.EAST,
-                }
-        return opposites[self]
+from collections import deque
+from .wall import Wall
+from .algorithms import DFSAlgorithm
 
 
 class MazeGenerator:
@@ -38,6 +24,7 @@ class MazeGenerator:
         self.algorithm = algorithm
         self._grid = self._create_grid()
         self._pattern_cells: set[tuple[int, int]] = set()
+        self._solution: list[Wall] = []
 
     def _create_grid(self) -> list[list[int]]:
         grid: list[list[int]] = []
@@ -86,9 +73,8 @@ class MazeGenerator:
                     return False
 
         return True
-    
 
-    def would_create_open_3x3(
+    def _would_create_open_3x3(
             self,
             current: tuple[int, int],
             direction: Wall,
@@ -114,7 +100,6 @@ class MazeGenerator:
 
         return creates_open_3x3
 
-
     def _open_wall(
             self,
             current: tuple[int, int],
@@ -126,40 +111,6 @@ class MazeGenerator:
 
         self._grid[current_y][current_x] &= ~int(direction)
         self._grid[neighbour_y][neighbour_x] &= ~int(direction.opposite())
-
-    def _generate_dfs(self) -> None:
-        visited: set[tuple[int, int]] = set()
-        stack: list[tuple[int, int]] = []
-        rng = random.Random(self.seed)
-
-        start: tuple[int, int] = (0, 0)
-        visited.add(start)
-        stack.append(start)
-
-        while stack:
-            current = stack[-1]
-            current_x, current_y = current
-
-            neighbours = self._get_neighbours(current_x, current_y)
-            unvisited_neighbours: list[tuple[Wall, tuple[int, int]]] = []
-            for direction, coordinates in neighbours:
-                if (
-                        coordinates not in visited
-                        and coordinates not in self._pattern_cells
-                        ):
-                    unvisited_neighbours.append((direction, coordinates))
-
-            if unvisited_neighbours:
-                direction, next_cell = rng.choice(unvisited_neighbours)
-                self._open_wall(current, direction, next_cell)
-                visited.add(next_cell)
-                stack.append(next_cell)
-            else:
-                stack.pop()
-
-        expected_cells = (self.width * self.height - len(self._pattern_cells))
-        if len(visited) != expected_cells:
-            raise RuntimeError("Maze generation left unreachable cells")
 
     def _create_42_pattern(self) -> set[tuple[int, int]]:
         pattern: list[list[int]] = [
@@ -208,9 +159,15 @@ class MazeGenerator:
                     if self._grid[y][x] & int(direction):
                         closed_neighbours.append((direction, coordinates))
                 if closed_neighbours:
-                    direction, neighbour = rng.choice(closed_neighbours)
-                    self._open_wall(current, direction, neighbour)
-
+                    rng.shuffle(closed_neighbours)
+                    for direction, neighbour in closed_neighbours:
+                        if not self._would_create_open_3x3(
+                                current,
+                                direction,
+                                neighbour,
+                                ):
+                            self._open_wall(current, direction, neighbour)
+                            break
 
     def _count_open_passages(self, x: int, y: int) -> int:
         open_passages = 0
@@ -222,16 +179,84 @@ class MazeGenerator:
 
         return open_passages
 
+    def _validate_entry_exit(self) -> None:
+        entry_x, entry_y = self.entry
+        exit_x, exit_y = self.exit_
+
+        if not self._is_inside(entry_x, entry_y):
+            raise ValueError("Entry is outside the maze")
+        if not self._is_inside(exit_x, exit_y):
+            raise ValueError("Exit is outside the maze")
+        if self.entry == self.exit_:
+            raise ValueError("Entry and exit must be different")
+        if (
+                self.entry in self._pattern_cells
+                or self.exit_ in self._pattern_cells
+                ):
+            raise ValueError("Entry and exit cannot be inside the 42 pattern")
+
+    def _get_open_neighbours(
+            self,
+            x: int,
+            y: int,
+            ) -> list[tuple[Wall, tuple[int, int]]]:
+        open_neighbours: list[tuple[Wall, tuple[int, int]]] = []
+        neighbours = self._get_neighbours(x, y)
+
+        for direction, coordinates in neighbours:
+            if not (self._grid[y][x] & int(direction)):
+                open_neighbours.append((direction, coordinates))
+
+        return open_neighbours
+
+    def _solve_bfs(self) -> list[Wall]:
+        queue: deque[tuple[int, int]] = deque()
+        visited: set[tuple[int, int]] = set()
+        parents: dict[
+                tuple[int, int],
+                tuple[tuple[int, int], Wall]
+                ] = {}
+
+        queue.append(self.entry)
+        visited.add(self.entry)
+        while queue:
+            current = queue.popleft()
+            if current == self.exit_:
+                break
+            current_x, current_y = current
+            open_neighbours = self._get_open_neighbours(current_x, current_y)
+            for direction, neighbour in open_neighbours:
+                if neighbour in visited:
+                    continue
+                visited.add(neighbour)
+                parents[neighbour] = (current, direction)
+                queue.append(neighbour)
+        if self.exit_ not in visited:
+            raise RuntimeError("No path found between entry and exit")
+        path: list[Wall] = []
+        current = self.exit_
+        while current != self.entry:
+            parent, direction = parents[current]
+            path.append(direction)
+            current = parent
+        path.reverse()
+        return path
 
     def generate(self) -> list[list[int]]:
         self._grid = self._create_grid()
         self._pattern_cells = self._create_42_pattern()
+        self._validate_entry_exit()
 
         if self.algorithm == "dfs":
-            self._generate_dfs()
+            algorithm = DFSAlgorithm()
+            algorithm.generate(self)
         else:
             raise ValueError(f"Unknown algorithm: {self.algorithm}")
         if not self.perfect:
             self._add_extra_passages()
+        self._solution = self._solve_bfs()
 
         return self._grid
+
+    def get_solution(self) -> list[Wall]:
+        return self._solution.copy()

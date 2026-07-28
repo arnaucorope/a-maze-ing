@@ -1,4 +1,5 @@
-from mazegen import MazeGenerator, Wall
+
+from mazegen import MazeGenerator
 
 
 generator = MazeGenerator(
@@ -7,17 +8,11 @@ generator = MazeGenerator(
     entry=(0, 0),
     exit_=(2, 2),
     perfect=True,
+    seed=42,
+    algorithm="dfs",
 )
 
-generator.generate()
+grid = generator.generate()
 
-for y, row in enumerate(generator._grid):
-    line = ""
-
-    for x, cell in enumerate(row):
-        if (x, y) in generator._pattern_cells:
-            line += "# "
-        else:
-            line += ". "
-
-    print(line)
+print(grid)
+print(generator.get_solution())
