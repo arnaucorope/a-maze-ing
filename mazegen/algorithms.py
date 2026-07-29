@@ -33,7 +33,7 @@ class DFSAlgorithm(MazeAlgorithm):
                 if (
                         coordinates not in visited
                         and coordinates not in maze._pattern_cells
-                        ):
+                        )
                     unvisited_neighbours.append((direction, coordinates))
 
             if unvisited_neighbours:
@@ -46,3 +46,17 @@ class DFSAlgorithm(MazeAlgorithm):
         expected_cells = (maze.width * maze.height - len(maze._pattern_cells))
         if len(visited) != expected_cells:
             raise RuntimeError("Maze generation left unreachable cells")
+
+
+class PrimAlgorithm(MazeAlgorithm):
+    def generate(self, maze: "MazeGenerator") -> None:
+        visited: set[tuple[int, int]] = set()
+        frontier: list[
+                tuple[
+                    tuple[int, int],
+                    Wall,
+                    tuple[int, int],
+                    ]
+                ] = []
+        
+
