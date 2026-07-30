@@ -50,6 +50,7 @@ class DFSAlgorithm(MazeAlgorithm):
 
 class PrimAlgorithm(MazeAlgorithm):
     def generate(self, maze: "MazeGenerator") -> None:
+        rng = random.Random(maze.seed)
         visited: set[tuple[int, int]] = set()
         frontier: list[
                 tuple[
@@ -58,5 +59,32 @@ class PrimAlgorithm(MazeAlgorithm):
                     tuple[int, int],
                     ]
                 ] = []
-        
+        start = (0, 0)
+        visited.add(start)
+        start_x, start_y = start
+        neighbours = maze._get_neighbours(start_x, start_y)
 
+        for direction, neighbour in neighbours:
+            if neighbour not in maze._pattern_cells:
+                frontier.append((start, direction, neighbour))
+        while frontier:
+            option = rng.choice(frontier)
+            frontier.remove(option)
+            current, direction, neighbour = option
+            if neighbour in visited:
+                continue
+            maze._open_wall(current, direction, neighbour)
+            visited.add(neighbour)
+            neighbour_x, neighbour_y = neighbour
+            new_neighbours = maze._get_neighbours(neighbour_x, neighbour_y)
+
+            for new_direction, new_neighbour in new_neighbours:
+                if (
+                        new_neighbour not in visited
+                        and new_neighbour not in maze._pattern_cells
+                        ):
+                    frontier.append((neighbour, new_direction, new_neighbour))
+
+        expected_cells = (maze.width * maze.height - len(maze._pattern_cells))
+        if len(visited) != expected_cells:
+            raise RuntimeError("Maze generation left unreachable cells")

@@ -1,7 +1,7 @@
 import random
 from collections import deque
 from .wall import Wall
-from .algorithms import DFSAlgorithm
+from .algorithms import DFSAlgorithm, PrimAlgorithm
 
 
 class MazeGenerator:
@@ -249,9 +249,11 @@ class MazeGenerator:
 
         if self.algorithm == "dfs":
             algorithm = DFSAlgorithm()
-            algorithm.generate(self)
+        elif self.algorithm == "prim":
+            algorithm = PrimAlgorithm()
         else:
             raise ValueError(f"Unknown algorithm: {self.algorithm}")
+        alforithm.generate(self)
         if not self.perfect:
             self._add_extra_passages()
         self._solution = self._solve_bfs()
