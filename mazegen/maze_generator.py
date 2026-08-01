@@ -1,7 +1,8 @@
 import random
 from collections import deque
 from .wall import Wall
-from .algorithms import DFSAlgorithm, PrimAlgorithm
+from .algorithms import MazeAlgorithm, DFSAlgorithm, PrimAlgorithm
+from collections.abc import Iterator
 
 
 class MazeGenerator:
@@ -139,7 +140,7 @@ class MazeGenerator:
                     pattern_cells.add((start_x + x, start_y + y))
         return pattern_cells
 
-    def _add_extra_passages(self) -> None:
+    def _add_extra_passages(self) -> Iterator[list[list[int]]]:
         rng = random.Random(self.seed)
 
         for y in range(self.height):
@@ -167,6 +168,7 @@ class MazeGenerator:
                                 neighbour,
                                 ):
                             self._open_wall(current, direction, neighbour)
+                            yield self._grid
                             break
 
     def _count_open_passages(self, x: int, y: int) -> int:
@@ -246,6 +248,7 @@ class MazeGenerator:
         self._grid = self._create_grid()
         self._pattern_cells = self._create_42_pattern()
         self._validate_entry_exit()
+        algorithm: MazeAlgorithm
 
         if self.algorithm == "dfs":
             algorithm = DFSAlgorithm()
@@ -253,12 +256,41 @@ class MazeGenerator:
             algorithm = PrimAlgorithm()
         else:
             raise ValueError(f"Unknown algorithm: {self.algorithm}")
-        alforithm.generate(self)
+        steps = algorithm.generate(self)
+        for _ in steps:
+            pass
         if not self.perfect:
-            self._add_extra_passages()
+            extra_steps = self._add_extra_passages()
+            for _ in extra_steps:
+                pass
         self._solution = self._solve_bfs()
+        solution_steps = self._solution_steps()
+        for _ in solution_steps:
+            pass
 
         return self._grid
 
     def get_solution(self) -> list[Wall]:
         return self._solution.copy()
+
+    def _solution_steps(self) -> Iterator[Wall]:
+        for direction in self._solution:
+            yield direction
+
+    def get_dead_ends(self) -> list[tuple[int, int]]:
+        dead_ends: list[tuple[int, int]] = []
+
+        for y in range(self.height):
+            for x in range(self.width):
+                current = (x, y)
+
+                if current in self._pattern_cells:
+                    continue
+
+                if current == self.entry or current == self.exit_:
+                    continue
+
+                if self._count_open_passages(x, y) == 1:
+                    dead_ends.append(current)
+
+        return dead_ends

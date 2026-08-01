@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 import random
 from .wall import Wall
+from collections.abc import Iterator
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -9,12 +10,12 @@ if TYPE_CHECKING:
 
 class MazeAlgorithm(ABC):
     @abstractmethod
-    def generate(self, maze: "MazeGenerator") -> None:
+    def generate(self, maze: "MazeGenerator") -> Iterator[list[list[int]]]:
         pass
 
 
 class DFSAlgorithm(MazeAlgorithm):
-    def generate(self, maze: "MazeGenerator") -> None:
+    def generate(self, maze: "MazeGenerator") -> Iterator[list[list[int]]]:
         visited: set[tuple[int, int]] = set()
         stack: list[tuple[int, int]] = []
         rng = random.Random(maze.seed)
@@ -33,7 +34,7 @@ class DFSAlgorithm(MazeAlgorithm):
                 if (
                         coordinates not in visited
                         and coordinates not in maze._pattern_cells
-                        )
+                        ):
                     unvisited_neighbours.append((direction, coordinates))
 
             if unvisited_neighbours:
@@ -41,6 +42,7 @@ class DFSAlgorithm(MazeAlgorithm):
                 maze._open_wall(current, direction, next_cell)
                 visited.add(next_cell)
                 stack.append(next_cell)
+                yield maze._grid
             else:
                 stack.pop()
         expected_cells = (maze.width * maze.height - len(maze._pattern_cells))
@@ -49,7 +51,7 @@ class DFSAlgorithm(MazeAlgorithm):
 
 
 class PrimAlgorithm(MazeAlgorithm):
-    def generate(self, maze: "MazeGenerator") -> None:
+    def generate(self, maze: "MazeGenerator") -> Iterator[list[list[int]]]:
         rng = random.Random(maze.seed)
         visited: set[tuple[int, int]] = set()
         frontier: list[
@@ -84,6 +86,7 @@ class PrimAlgorithm(MazeAlgorithm):
                         and new_neighbour not in maze._pattern_cells
                         ):
                     frontier.append((neighbour, new_direction, new_neighbour))
+            yield maze._grid
 
         expected_cells = (maze.width * maze.height - len(maze._pattern_cells))
         if len(visited) != expected_cells:
