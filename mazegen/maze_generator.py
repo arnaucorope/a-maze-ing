@@ -276,21 +276,3 @@ class MazeGenerator:
     def _solution_steps(self) -> Iterator[Wall]:
         for direction in self._solution:
             yield direction
-
-    def get_dead_ends(self) -> list[tuple[int, int]]:
-        dead_ends: list[tuple[int, int]] = []
-
-        for y in range(self.height):
-            for x in range(self.width):
-                current = (x, y)
-
-                if current in self._pattern_cells:
-                    continue
-
-                if current == self.entry or current == self.exit_:
-                    continue
-
-                if self._count_open_passages(x, y) == 1:
-                    dead_ends.append(current)
-
-        return dead_ends
