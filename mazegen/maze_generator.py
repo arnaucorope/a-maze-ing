@@ -244,7 +244,7 @@ class MazeGenerator:
         path.reverse()
         return path
 
-    def generate(self) -> list[list[int]]:
+    def generate_steps(self) -> Iterator[list[list[int]]]:
         self._grid = self._create_grid()
         self._pattern_cells = self._create_42_pattern()
         self._validate_entry_exit()
@@ -256,16 +256,17 @@ class MazeGenerator:
             algorithm = PrimAlgorithm()
         else:
             raise ValueError(f"Unknown algorithm: {self.algorithm}")
-        steps = algorithm.generate(self)
-        for _ in steps:
-            pass
+        algorithm_steps = algorithm.generate(self)
+        for grid in algorithm_steps:
+            yield grid
         if not self.perfect:
             extra_steps = self._add_extra_passages()
-            for _ in extra_steps:
-                pass
+            for grid in extra_steps:
+                yield grid
         self._solution = self._solve_bfs()
-        solution_steps = self._solution_steps()
-        for _ in solution_steps:
+
+    def generate(self) -> list[list[int]]:
+        for _ in self.generate_steps():
             pass
 
         return self._grid
@@ -273,6 +274,6 @@ class MazeGenerator:
     def get_solution(self) -> list[Wall]:
         return self._solution.copy()
 
-    def _solution_steps(self) -> Iterator[Wall]:
+    def solution_steps(self) -> Iterator[Wall]:
         for direction in self._solution:
             yield direction
