@@ -249,6 +249,7 @@ class MazeGenerator:
         self._pattern_cells = self._create_42_pattern()
         self._validate_entry_exit()
         algorithm: MazeAlgorithm
+        yield self._grid
 
         if self.algorithm == "dfs":
             algorithm = DFSAlgorithm()
