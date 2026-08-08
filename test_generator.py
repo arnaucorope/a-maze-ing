@@ -7,10 +7,10 @@ from mazegen.maze_generator import MazeGenerator
 
 def main() -> None:
     maze = MazeGenerator(
-        width=15,
-        height=17,
+        width=11,
+        height=11,
         entry=(0, 0),
-        exit_=(14, 12),
+        exit_=(10, 10),
         perfect=False,
         algorithm="dfs",
     )
@@ -20,7 +20,7 @@ def main() -> None:
     solution: list[Wall] = []
 
     for grid in maze.generate_steps():
-        os.system("clear")
+        print("\033[H", end="")
 
         renderer.draw(
             grid,
@@ -35,7 +35,7 @@ def main() -> None:
     for direction in maze.solution_steps():
         solution.append(direction)
 
-        os.system("clear")
+        print("\033[H", end="")
 
         renderer.draw(
             grid,
