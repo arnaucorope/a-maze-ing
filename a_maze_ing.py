@@ -3,16 +3,30 @@ import time
 from mazegen import Wall
 from app.renderer import TerminalRenderer
 from mazegen.maze_generator import MazeGenerator
+import config_parsing
+import sys
 
 
 def main() -> None:
+    if len(sys.argv) != 2:
+        print("Usage: python3 a_maze_ing.py config.txt")
+        return
+    
+    print("\033[2J\033[H", end="")
+
+    try:
+        config = config_parsing.config_parser(sys.argv[1])
+    except ValueError as e:
+        print(f"Configuration error: {e}")
+        return
+
     maze = MazeGenerator(
-        width=11,
-        height=11,
-        entry=(0, 0),
-        exit_=(10, 10),
-        perfect=False,
-        algorithm="dfs",
+        config.width,
+        config.height,
+        config.entry,
+        config.exit_,
+        config.perfect,
+        config.seed,
     )
 
     renderer = TerminalRenderer()
@@ -31,7 +45,6 @@ def main() -> None:
 
         time.sleep(0.05)
 
-
     for direction in maze.solution_steps():
         solution.append(direction)
 
@@ -45,6 +58,7 @@ def main() -> None:
         )
 
         time.sleep(0.05)
+
 
 if __name__ == "__main__":
     main()
