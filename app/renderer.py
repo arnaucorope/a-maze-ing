@@ -5,11 +5,13 @@ RED = "\033[31m"
 RESET = "\033[0m"
 YELLOW = "\033[33m"
 WHITE = "\033[97m"
+CYAN = "\033[36m"
 
 
 class TerminalRenderer:
     def __init__(self) -> None:
         self.wall = f"{WHITE}███{RESET}"
+        self.pattern_42 = f"{CYAN}███{RESET}"
         self.space = "   "
         self.entry_char = f"{GREEN}███{RESET}"
         self.exit_char = f"{RED}███{RESET}"
