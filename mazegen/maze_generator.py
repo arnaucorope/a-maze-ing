@@ -6,6 +6,7 @@ from collections.abc import Iterator
 
 
 class MazeGenerator:
+    """Generate and manage a maze using the selected algorithm."""
     def __init__(
         self,
         width: int,
@@ -141,6 +142,7 @@ class MazeGenerator:
         return pattern_cells
 
     def _add_extra_passages(self) -> Iterator[list[list[int]]]:
+    """Add extra passages to imperfect mazes and remove all dead ends."""
         rng = random.Random(self.seed)
 
         for y in range(self.height):
@@ -172,6 +174,7 @@ class MazeGenerator:
                             break
 
     def _count_open_passages(self, x: int, y: int) -> int:
+        """Count open passages to identify dead-end cells."""
         open_passages = 0
         neighbours = self._get_neighbours(x, y)
 
@@ -212,6 +215,7 @@ class MazeGenerator:
         return open_neighbours
 
     def _solve_bfs(self) -> list[Wall]:
+        """Find the shortest path from entry to exit using BFS."""
         queue: deque[tuple[int, int]] = deque()
         visited: set[tuple[int, int]] = set()
         parents: dict[
@@ -245,6 +249,7 @@ class MazeGenerator:
         return path
 
     def generate_steps(self) -> Iterator[list[list[int]]]:
+        """Yield the maze grid after each generation step."""
         self._grid = self._create_grid()
         self._pattern_cells = self._create_42_pattern()
         self._validate_entry_exit()
@@ -267,6 +272,7 @@ class MazeGenerator:
         self._solution = self._solve_bfs()
 
     def generate(self) -> list[list[int]]:
+        """Generate and return the final maze grid."""
         for _ in self.generate_steps():
             pass
 

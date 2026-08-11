@@ -9,6 +9,7 @@ if TYPE_CHECKING:
 
 
 class MazeAlgorithm(ABC):
+    """Define the interface for maze generation algorithms."""
     @abstractmethod
     def generate(self, maze: "MazeGenerator") -> Iterator[list[list[int]]]:
         pass
