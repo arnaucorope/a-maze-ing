@@ -28,6 +28,9 @@ class MazeGenerator:
         self._pattern_cells: set[tuple[int, int]] = set()
         self._solution: list[Wall] = []
 
+    def get_pattern_cells(self) -> set[tuple[int, int]]:
+        return self._pattern_cells.copy()
+
     def _create_grid(self) -> list[list[int]]:
         grid: list[list[int]] = []
 

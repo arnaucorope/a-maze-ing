@@ -41,6 +41,7 @@ def main() -> None:
             maze.entry,
             maze.exit_,
             solution,
+            maze.get_pattern_cells(),
         )
 
         time.sleep(0.05)
@@ -55,6 +56,7 @@ def main() -> None:
             maze.entry,
             maze.exit_,
             solution,
+            maze.get_pattern_cells(),
         )
 
         time.sleep(0.05)

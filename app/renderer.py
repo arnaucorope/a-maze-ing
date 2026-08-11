@@ -5,7 +5,7 @@ RED = "\033[31m"
 RESET = "\033[0m"
 YELLOW = "\033[33m"
 WHITE = "\033[97m"
-CYAN = "\033[36m"
+CYAN = "\033[38;5;30m"
 
 
 class TerminalRenderer:
@@ -42,30 +42,36 @@ class TerminalRenderer:
         self,
         display_grid: list[list[str]],
         grid: list[list[int]],
+        pattern_42: set[tuple[int, int]],
     ) -> None:
         for y in range(len(grid)):
             for x in range(len(grid[y])):
                 cell = grid[y][x]
 
+                if (x, y) in pattern_42:
+                    wall = self.pattern_42
+                else:
+                    wall = self.wall
+
                 display_y = y * 2 + 1
                 display_x = x * 2 + 1
 
-                display_grid[display_y - 1][display_x - 1] = self.wall
-                display_grid[display_y - 1][display_x + 1] = self.wall
-                display_grid[display_y + 1][display_x - 1] = self.wall
-                display_grid[display_y + 1][display_x + 1] = self.wall
+                display_grid[display_y - 1][display_x - 1] = wall
+                display_grid[display_y - 1][display_x + 1] = wall
+                display_grid[display_y + 1][display_x - 1] = wall
+                display_grid[display_y + 1][display_x + 1] = wall
 
                 if cell & int(Wall.NORTH):
-                    display_grid[display_y - 1][display_x] = self.wall
+                    display_grid[display_y - 1][display_x] = wall
 
                 if cell & int(Wall.EAST):
-                    display_grid[display_y][display_x + 1] = self.wall
+                    display_grid[display_y][display_x + 1] = wall
 
                 if cell & int(Wall.SOUTH):
-                    display_grid[display_y + 1][display_x] = self.wall
+                    display_grid[display_y + 1][display_x] = wall
 
                 if cell & int(Wall.WEST):
-                    display_grid[display_y][display_x - 1] = self.wall
+                    display_grid[display_y][display_x - 1] = wall
 
     def _draw_entry_exit(
         self,
@@ -118,10 +124,11 @@ class TerminalRenderer:
         entry: tuple[int, int],
         exit_: tuple[int, int],
         solution: list[Wall],
+        pattern_42: set[tuple[int, int]],
     ) -> None:
         display_grid = self._create_display_grid(grid)
 
-        self._draw_walls(display_grid, grid)
+        self._draw_walls(display_grid, grid, pattern_42)
         self._draw_solution(display_grid, entry, solution)
         self._draw_entry_exit(display_grid, entry, exit_)
 
