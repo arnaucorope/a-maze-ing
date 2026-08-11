@@ -9,7 +9,7 @@ class Wall(IntFlag):
     WEST = 8
 
     def opposite(self) -> "Wall":
-    """Return the opposite wall direction."""
+        """Return the opposite wall direction."""
         opposites: dict[Wall, Wall] = {
                 Wall.NORTH: Wall.SOUTH,
                 Wall.EAST: Wall.WEST,
