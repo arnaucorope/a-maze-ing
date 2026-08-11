@@ -83,6 +83,7 @@ class MazeGenerator:
             direction: Wall,
             neighbour: tuple[int, int],
             ) -> bool:
+        """Check whether opening this wall would create a 3x3 open area."""
         current_x, current_y = current
         neighbour_x, neighbour_y = neighbour
         current_value = self._grid[current_y][current_x]
@@ -143,6 +144,7 @@ class MazeGenerator:
         return pattern_cells
 
     def _add_extra_passages(self) -> Iterator[list[list[int]]]:
+        """Add extra passages to imperfect mazes, removing all dead ends."""
         rng = random.Random(self.seed)
 
         for y in range(self.height):

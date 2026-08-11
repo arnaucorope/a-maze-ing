@@ -9,7 +9,6 @@ CYAN = "\033[38;5;30m"
 
 
 class TerminalRenderer:
-    """Render the maze and its visual elements in the terminal."""
     def __init__(self) -> None:
         self.wall = f"{WHITE}███{RESET}"
         self.pattern_42 = f"{CYAN}███{RESET}"
@@ -22,6 +21,7 @@ class TerminalRenderer:
         self,
         grid: list[list[int]],
     ) -> list[list[str]]:
+        """Create an empty visual grid for rendering the maze."""
         height = len(grid)
         width = len(grid[0])
 
@@ -45,7 +45,7 @@ class TerminalRenderer:
         grid: list[list[int]],
         pattern_42: set[tuple[int, int]],
     ) -> None:
-        """Draw closed walls by reading the bitmask of each maze cell."""
+        """Draw each closed wall according to the cell bitmask."""
         for y in range(len(grid)):
             for x in range(len(grid[y])):
                 cell = grid[y][x]
@@ -128,8 +128,8 @@ class TerminalRenderer:
         solution: list[Wall],
         pattern_42: set[tuple[int, int]],
     ) -> None:
-        """Build and print the maze frame with walls,
-        entry, exit, and solution."""
+        """Render walls, solution, entry, and exit,
+        then print the complete maze frame."""
         display_grid = self._create_display_grid(grid)
 
         self._draw_walls(display_grid, grid, pattern_42)
