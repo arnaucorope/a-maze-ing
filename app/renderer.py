@@ -1,21 +1,71 @@
 from mazegen.wall import Wall
+import random
+import time
 
 GREEN = "\033[32m"
 RED = "\033[31m"
 RESET = "\033[0m"
-YELLOW = "\033[33m"
+BROWN = "\033[33m"
 WHITE = "\033[97m"
 CYAN = "\033[38;5;30m"
+
+COLORS = [
+    "\033[38;5;23m",
+    "\033[38;5;24m",
+    "\033[38;5;25m",
+    "\033[38;5;30m",
+    "\033[38;5;31m",
+    "\033[38;5;32m",
+    "\033[38;5;37m",
+    "\033[38;5;38m",
+    "\033[38;5;39m",
+
+    "\033[38;5;52m",
+    "\033[38;5;53m",
+    "\033[38;5;58m",
+    "\033[38;5;59m",
+    "\033[38;5;60m",
+    "\033[38;5;61m",
+    "\033[38;5;67m",
+    "\033[38;5;68m",
+
+    "\033[38;5;72m",
+    "\033[38;5;73m",
+    "\033[38;5;74m",
+    "\033[38;5;79m",
+    "\033[38;5;80m",
+    "\033[38;5;81m",
+    "\033[38;5;102m",
+    "\033[38;5;103m",
+
+    "\033[38;5;108m",
+    "\033[38;5;109m",
+    "\033[38;5;110m",
+    "\033[38;5;116m",
+    "\033[38;5;137m",
+    "\033[38;5;138m",
+    "\033[38;5;139m",
+    "\033[38;5;144m",
+
+    "\033[38;5;145m",
+    "\033[38;5;146m",
+    "\033[38;5;167m",
+    "\033[38;5;168m",
+    "\033[38;5;173m",
+    "\033[38;5;174m",
+    "\033[38;5;175m",
+    "\033[38;5;180m",
+]
 
 
 class TerminalRenderer:
     def __init__(self) -> None:
-        self.wall = f"{WHITE}███{RESET}"
-        self.pattern_42 = f"{CYAN}███{RESET}"
         self.space = "   "
         self.entry_char = f"{GREEN}███{RESET}"
         self.exit_char = f"{RED}███{RESET}"
-        self.solution_char = f"{YELLOW}███{RESET}"
+        self.solution_char = f"{BROWN}███{RESET}"
+        self.wall = f"{WHITE}███{RESET}"
+        self.pattern_42 = f"{CYAN}███{RESET}"
 
     def _create_display_grid(
         self,
@@ -38,6 +88,17 @@ class TerminalRenderer:
             display_grid.append(row)
 
         return display_grid
+
+    def change_colors(self) -> None:
+        """Change the colours of the walls and 42 pattern."""
+        wall_color = random.randrange(len(COLORS))
+        pattern_color = random.randrange(len(COLORS))
+
+        while pattern_color == wall_color:
+            pattern_color = random.randrange(len(COLORS))
+
+        self.wall = f"{COLORS[wall_color]}███{RESET}"
+        self.pattern_42 = f"{COLORS[pattern_color]}███{RESET}"
 
     def _draw_walls(
         self,

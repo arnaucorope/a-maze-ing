@@ -27,6 +27,7 @@ class MazeGenerator:
         self._grid = self._create_grid()
         self._pattern_cells: set[tuple[int, int]] = set()
         self._solution: list[Wall] = []
+        self.pattern_fits = True
 
     def _create_grid(self) -> list[list[int]]:
         grid: list[list[int]] = []
@@ -131,7 +132,7 @@ class MazeGenerator:
                 self.width < pattern_width + 2
                 or self.height < pattern_height + 2
                 ):
-            print("Error: maze too small for 42 pattern")
+            self.pattern_fits = False
             return set()
         start_x = (self.width - pattern_width) // 2
         start_y = (self.height - pattern_height) // 2
@@ -280,6 +281,10 @@ class MazeGenerator:
 
     def get_solution(self) -> list[Wall]:
         return self._solution.copy()
+
+    def get_pattern_cells(self) -> set[tuple[int, int]]:
+        """Return the cells occupied by the 42 pattern."""
+        return self._pattern_cells.copy()
 
     def solution_steps(self) -> Iterator[Wall]:
         for direction in self._solution:

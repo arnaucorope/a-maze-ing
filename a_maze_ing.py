@@ -2,11 +2,12 @@ import sys
 import termios
 import time
 import tty
-
+import random
 from mazegen import Wall
 from app.renderer import TerminalRenderer
 from mazegen.maze_generator import MazeGenerator
 import config_parsing
+import select
 
 
 def start_screen() -> None:
@@ -53,11 +54,10 @@ def draw_screen(
     grid: list[list[int]],
     solution: list[Wall],
     show_solution: bool,
+    renderer: TerminalRenderer,
 ) -> None:
     """Draw the maze and menu."""
     clear_screen()
-
-    renderer = TerminalRenderer()
 
     if show_solution:
         path = solution
@@ -71,15 +71,25 @@ def draw_screen(
         path,
         maze.get_pattern_cells(),
     )
+    if not maze.pattern_fits:
+        print()
+        RED = "\033[31m"
+        YELLOW = "\033[33m"
+        RESET = "\033[0m"
 
+        print(
+                f"{RED}✖ Error:{RESET} "
+                f"The maze is too small to fit the {YELLOW}42{RESET} pattern."
+            )
     print()
     print("A-Maze-ing")
     print("1. Generate fixed maze")
     print("2. Generate animated maze")
-    print("3. Change algorithm")
+    print(f"3. Change algorithm. Current: {maze.algorithm}")
     print("4. Show/Hide the shortest path")
     print("5. Rotate the wall colours")
-    print("6. Quit")
+    print("6. Color gambling")
+    print("7. Quit")
     print()
     print("Press a number (1-6) to select an option: ", end="", flush=True)
 
@@ -96,12 +106,11 @@ def fixed_maze(
 
 def animated_maze(
     maze: MazeGenerator,
+    renderer: TerminalRenderer,
 ) -> tuple[list[list[int]], list[Wall]]:
     """Generate and animate a maze."""
-    renderer = TerminalRenderer()
     solution: list[Wall] = []
     grid: list[list[int]] = []
-
     # Animación de la generación del maze
     for grid in maze.generate_steps():
         clear_screen()
@@ -134,7 +143,6 @@ def animated_maze(
 
     return grid, solution
 
-
 def main() -> None:
     if len(sys.argv) != 2:
         print("Usage: python3 a_maze_ing.py config.txt")
@@ -163,7 +171,8 @@ def main() -> None:
     start_screen()
 
     show_solution = True
-
+    dfs = True
+    renderer = TerminalRenderer()
     try:
         # Primer maze
         grid, solution = fixed_maze(maze)
@@ -178,6 +187,7 @@ def main() -> None:
                 grid,
                 solution,
                 show_solution,
+                renderer,
             )
 
             # -------------------------------------------------
@@ -190,16 +200,39 @@ def main() -> None:
             # -------------------------------------------------
             match option:
                 case "1":
+                    maze.seed = random.randint(1, 100)
                     grid, solution = fixed_maze(maze)
                 case "2":
-                    grid, solution = animated_maze(maze)
+                    maze.seed = random.randint(1, 100)
+                    grid, solution = animated_maze(maze, renderer)
                 case "3":
-                    pass
+                    dfs = not dfs
+                    if not dfs:
+                        maze.algorithm = "prim"
+                    else:
+                        maze.algorithm = "dfs"
                 case "4":
                     show_solution = not show_solution
                 case "5":
-                    pass
+                    renderer.change_colors()
                 case "6":
+                    update = 0.005
+                    for i in range(300):
+                        renderer.change_colors()
+                        draw_screen(
+                            maze,
+                            grid,
+                            solution,
+                            show_solution,
+                            renderer,
+                        )
+
+                        if i > 260:
+                            update += 0.005
+                            time.sleep(update)
+                        else: 
+                            time.sleep(0.005)
+                case "7":
                     running = False
 
     finally:
