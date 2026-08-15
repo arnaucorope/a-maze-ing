@@ -16,6 +16,7 @@ debug: install
 	$(BIN)/python -m pdb a_maze_ing.py config.txt
 
 clean:
+	rm output_maze.txt
 	rm -rf mazegen.egg-info
 	rm -rf $(VENV)
 	rm -rf dist
