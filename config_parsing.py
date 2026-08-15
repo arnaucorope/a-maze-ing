@@ -1,5 +1,15 @@
-from typing import Optional, cast
+from typing import Optional, cast, Any
 from pydantic import BaseModel, Field, field_validator, model_validator
+
+VALID_KEYS = {
+    "WIDTH",
+    "HEIGHT",
+    "ENTRY",
+    "EXIT",
+    "OUTPUT_FILE",
+    "PERFECT",
+    "SEED",
+}
 
 
 class MazeConfig(BaseModel):
@@ -39,7 +49,7 @@ class MazeConfig(BaseModel):
                              f"limits: coordinates must be smaller "
                              f"that {self.height} and {self.width}.")
 
-        if ex_x < 0 or ex_x >= self.width or ex_y < 0 or ex_y >= self.height: 
+        if ex_x < 0 or ex_x >= self.width or ex_y < 0 or ex_y >= self.height:
             raise ValueError(f"Exit coordinates are outside of the maze "
                              f"limits: coordinates must be smaller "
                              f"that {self.height} and {self.width}.")
@@ -58,7 +68,10 @@ def config_parser(filename: str) -> MazeConfig:
         for i, line in enumerate(file, start=1):
             line = line.strip()
 
-            if not line or line.startswith("#"):
+            if not line or not line.upper().startswith(("WIDTH", "HEIGHT",
+                                                        "ENTRY",
+                                                        "EXIT", "OUTPUT_FILE",
+                                                        "PERFECT", "SEED")):
                 continue
 
             if "=" not in line:
@@ -69,6 +82,9 @@ def config_parser(filename: str) -> MazeConfig:
 
             key = key.strip().upper()
             value = value.strip().strip("\"'")
+
+            if key not in VALID_KEYS:
+                continue
 
             if not key:
                 raise ValueError(
@@ -81,7 +97,10 @@ def config_parser(filename: str) -> MazeConfig:
 
             data[key] = value
 
+            if value == "" or not value:
+                raise ValueError(f"Missing value in {key}")
+
     try:
-        return MazeConfig(**cast(dict, data)) # casteo xq mypy no entiende que pydantic puede recibir el dict de str y sabe convertirlas a los tipos de datos que espera cada atributo del modelo
+        return MazeConfig(**cast(dict[str, Any], data))
     except ValueError as e:
         raise ValueError(f"Invalid configuration: {e}") from e

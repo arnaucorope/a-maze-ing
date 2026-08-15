@@ -1,6 +1,5 @@
 from mazegen.wall import Wall
 import random
-import time
 
 GREEN = "\033[32m"
 RED = "\033[31m"

@@ -28,6 +28,8 @@ class MazeGenerator:
         self._pattern_cells: set[tuple[int, int]] = set()
         self._solution: list[Wall] = []
         self.pattern_fits = True
+        self.entry_moved = False
+        self.exit_moved = False
 
     def _create_grid(self) -> list[list[int]]:
         grid: list[list[int]] = []
@@ -186,21 +188,66 @@ class MazeGenerator:
 
         return open_passages
 
-    def _validate_entry_exit(self) -> None:
-        entry_x, entry_y = self.entry
-        exit_x, exit_y = self.exit_
+    def _move_coordinates_out_of_pattern(self) -> None:
+        """Move entry and exit outside the 42 pattern if needed."""
 
-        if not self._is_inside(entry_x, entry_y):
-            raise ValueError("Entry is outside the maze")
-        if not self._is_inside(exit_x, exit_y):
-            raise ValueError("Exit is outside the maze")
+        if self.entry in self._pattern_cells:
+            self.entry = self._nearest_available_coordinate(
+                self.entry
+            )
+            self.entry_moved = True
+
+        if self.exit_ in self._pattern_cells:
+            self.exit_ = self._nearest_available_coordinate(
+                self.exit_
+            )
+            self.exit_moved = True
+
+        # ENTRY y EXIT no pueden terminar en la misma celda.
         if self.entry == self.exit_:
-            raise ValueError("Entry and exit must be different")
-        if (
-                self.entry in self._pattern_cells
-                or self.exit_ in self._pattern_cells
-                ):
-            raise ValueError("Entry and exit cannot be inside the 42 pattern")
+            self.exit_ = self._nearest_available_coordinate(
+                self.exit_,
+                forbidden={self.entry},
+            )
+            self.exit_moved = True
+
+    def _nearest_available_coordinate(
+        self,
+        coordinate: tuple[int, int],
+        forbidden: set[tuple[int, int]] | None = None,
+    ) -> tuple[int, int]:
+        """Return the nearest coordinate outside the 42 pattern."""
+        if forbidden is None:
+            forbidden = set()
+
+        x, y = coordinate
+
+        candidates: list[tuple[int, int, int]] = []
+
+        for candidate_y in range(self.height):
+            for candidate_x in range(self.width):
+                candidate = (candidate_x, candidate_y)
+
+                if candidate in self._pattern_cells:
+                    continue
+
+                if candidate in forbidden:
+                    continue
+
+                distance = (
+                    abs(candidate_x - x)
+                    + abs(candidate_y - y)
+                )
+
+                candidates.append(
+                    (distance, candidate_x, candidate_y)
+                )
+
+        candidates.sort()
+
+        _, nearest_x, nearest_y = candidates[0]
+
+        return nearest_x, nearest_y
 
     def _get_open_neighbours(
             self,
@@ -254,7 +301,8 @@ class MazeGenerator:
         yielding the grid after each change."""
         self._grid = self._create_grid()
         self._pattern_cells = self._create_42_pattern()
-        self._validate_entry_exit()
+        self._move_coordinates_out_of_pattern()
+
         algorithm: MazeAlgorithm
         yield self._grid
 

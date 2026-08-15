@@ -7,7 +7,7 @@ from mazegen import Wall
 from app.renderer import TerminalRenderer
 from mazegen.maze_generator import MazeGenerator
 import config_parsing
-import select
+from exporter import export_grid
 
 
 def start_screen() -> None:
@@ -58,7 +58,6 @@ def draw_screen(
 ) -> None:
     """Draw the maze and menu."""
     clear_screen()
-
     if show_solution:
         path = solution
     else:
@@ -81,8 +80,20 @@ def draw_screen(
                 f"{RED}✖ Error:{RESET} "
                 f"The maze is too small to fit the {YELLOW}42{RESET} pattern."
             )
+    if maze.entry_moved:
+        print()
+        print("\033[93mWarning: Entry coordinates were inside "
+              "the 42 pattern and have been moved to the "
+              f"nearest available coordinate: {maze.entry}\033[0m")
+
+    if maze.exit_moved:
+        print()
+        print("\033[93mWarning: Exit coordinates were inside "
+              "the 42 pattern and have been moved to the "
+              f"nearest available coordinate.{maze.exit_}\033[0m")
+
     print()
-    print("A-Maze-ing")
+    print("=== A-Maze-ing ===")
     print("1. Generate fixed maze")
     print("2. Generate animated maze")
     print(f"3. Change algorithm. Current: {maze.algorithm}")
@@ -91,7 +102,7 @@ def draw_screen(
     print("6. Color gambling")
     print("7. Quit")
     print()
-    print("Press a number (1-6) to select an option: ", end="", flush=True)
+    print("Press a number (1-7) to select an option: ", end="", flush=True)
 
 
 def fixed_maze(
@@ -143,6 +154,7 @@ def animated_maze(
 
     return grid, solution
 
+
 def main() -> None:
     if len(sys.argv) != 2:
         print("Usage: python3 a_maze_ing.py config.txt")
@@ -150,6 +162,11 @@ def main() -> None:
 
     try:
         config = config_parsing.config_parser(sys.argv[1])
+    except FileNotFoundError:
+        print(f"Error: configuration file '{sys.argv[1]}' not found.")
+        print("Usage: python3 a_maze_ing.py config.txt")
+        return
+
     except ValueError as e:
         print(f"Configuration error: {e}")
         return
@@ -176,6 +193,13 @@ def main() -> None:
     try:
         # Primer maze
         grid, solution = fixed_maze(maze)
+        export_grid(
+            grid,
+            maze.entry,
+            maze.exit_,
+            solution,
+            "output_maze.txt"
+        )
 
         while running:
 
@@ -202,9 +226,23 @@ def main() -> None:
                 case "1":
                     maze.seed = random.randint(1, 100)
                     grid, solution = fixed_maze(maze)
+                    export_grid(
+                            grid,
+                            maze.entry,
+                            maze.exit_,
+                            solution,
+                            "output_maze.txt"
+                        )
                 case "2":
                     maze.seed = random.randint(1, 100)
                     grid, solution = animated_maze(maze, renderer)
+                    export_grid(
+                            grid,
+                            maze.entry,
+                            maze.exit_,
+                            solution,
+                            "output_maze.txt"
+                        )
                 case "3":
                     dfs = not dfs
                     if not dfs:
@@ -230,7 +268,7 @@ def main() -> None:
                         if i > 260:
                             update += 0.005
                             time.sleep(update)
-                        else: 
+                        else:
                             time.sleep(0.005)
                 case "7":
                     running = False

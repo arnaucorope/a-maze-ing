@@ -1,7 +1,9 @@
 WIDTH=15
-HEIGHT=15
-ENTRY="1",1
-EXIT=14,10
-OUTPUT_FILE=maze.txt
-PERFECT=False
-SEED=42
+HEIGHT=15    
+ENTRY= 0,0
+#  test comment
+exit=6,6
+perfect=False
+OUTPUT_FILE=maze.txit
+cdjjdd
+

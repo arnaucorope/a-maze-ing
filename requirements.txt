@@ -1,0 +1,5 @@
+pydantic
+build
+setuptools
+mypy
+flake8

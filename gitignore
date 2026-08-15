@@ -1,0 +1,21 @@
+# Virtual environments
+venv/
+.venv/
+
+# Python cache files
+__pycache__/
+*.py[cod]
+
+# Testing and type-checking caches
+.mypy_cache/
+.pytest_cache/
+
+# Build and packaging artifacts
+build/
+dist/
+*.egg-info/
+
+# Ignore all .txt files except required project files
+*.txt
+!config.txt
+!requirements.txt
