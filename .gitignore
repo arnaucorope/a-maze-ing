@@ -19,3 +19,6 @@ dist/
 *.txt
 !config.txt
 !requirements.txt
+
+# Editor settings
+.vscode/
