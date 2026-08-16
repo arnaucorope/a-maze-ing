@@ -62,6 +62,8 @@ The final application can generate both perfect and imperfect mazes, switch betw
 ├── a_maze_ing.py          # Main interactive application
 ├── config.txt             # Default maze configuration
 ├── config_parsing.py      # Pydantic-based configuration parser
+├── mazegen-1.0.0-py3-none-any.whl  # Reusable mazegen package
+├── mazegen-1.0.0.tar.gz            # Reusable mazegen source package
 ├── exporter.py            # Hex grid and solution exporter
 ├── app/
 │   ├── __init__.py
@@ -272,46 +274,65 @@ The path uses the **final** entry and exit positions, including any automatic re
 
 ## Reusable Code
 
-The reusable part of the project is the **`mazegen` package**. It is intentionally separated from configuration parsing, terminal rendering, and the interactive application.
+# A-Maze-Ing
 
-Its public interface exposes:
+### 1. What part of your code is reusable, and how?
+The most valuable part of this project is the **core maze engine**, which has been isolated from the execution script and delivered as a pre-compiled source distribution package (`.tar.gz`). 
 
-* `MazeGenerator` for generating and solving mazes;
-* `Wall` for interpreting wall directions and bit flags.
+Any external developer can take this archive file and install it into their independent Python projects. By importing `mazegen`, they can reuse the `MazeGenerator` class to create perfect or imperfect mathematical grids, extract matrix data, or plug it into different custom solvers without rewriting the core algorithms from scratch.
 
-A minimal use outside the terminal application looks like this:
+---
+
+### 2. How to Set Up and Install the Library From Scratch
+
+Since the `.tar.gz` package is already pre-built and included in the delivery, an external user only needs to run the following commands to install and test the library:
+
+#### Step 1: Create the Virtual Environment
+Run the automated Makefile command to set up a clean, isolated Python virtual environment:
+```bash
+make install
+```
+This command creates the .venv/ directory and prepares the environment parameters.
+#### Step 2: Activate the Virtual Environment
+Before installing the package, enter the newly created virtual environment:
+```bash
+source .venv/bin/activate
+```
+> *(Your terminal prompt will now show (.venv) at the beginning, confirming you are safely inside the isolated environment).*
+
+#### Step 3: Install the Pre-built Package via pip
+
+Install the delivered .tar.gz archive directly into your active virtual environment using pip:
+```bash
+pip install dist/mazegen-0.1.0.tar.gz
+```
+>  *(Note: Replace mazegen-0.1.0.tar.gz with the exact filename of the tar archive present in your repository).*
+
+---
+### 3. Implementation Example (How to use it)
+Once the package is installed, create an independent testing file named main.py and paste the following clean code inside it:
 
 ```python
 from mazegen import MazeGenerator
 
-maze = MazeGenerator(
-    width=15,
-    height=15,
-    entry=(0, 0),
-    exit_=(14, 14),
-    perfect=True,
-    seed=42,
-    algorithm="dfs",
-)
+def main():
+    maze = MazeGenerator(10, 10, (0, 0), (9, 9), True, "42")
+    maze.generate()
 
-grid = maze.generate()
-solution = maze.get_solution()
-```
+    with open("output_maze.txt", "w") as f:
+        f.write("\n".join("".join(f"{cell:X}" for cell in row) for row in maze._grid) + "\n")
 
-For applications that need visualization or event-by-event processing, `generate_steps()` can be consumed instead of `generate()`:
-
-```python
-for grid in maze.generate_steps():
-    # Render, inspect, log, or process each generation state.
-    pass
-```
-
-Because the generation logic does not depend on the terminal renderer or Pydantic configuration model, the package can be reused in another CLI, a graphical application, tests, or any other Python program.
-
-The package is configured with `pyproject.toml` and can also be built as a standard Python distribution with:
-
+if __name__ == "__main__":
+    main()
+```         
+#### Run the test script:
+To trigger the generator and write the final file, execute:
 ```bash
-make build
+python3 main.py
+```
+You can check that the file output_maze.txt has been successfully created with the hexadecimal grid matrix by running:
+```bash
+cat output_maze.txt
 ```
 
 ## Team and Project Management

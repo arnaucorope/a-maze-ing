@@ -1,6 +1,18 @@
+<<<<<<< Updated upstream
 WIDTH=15
 HEIGHT=15    
 ENTRY= 0,0
 exit=6,6
 perfect=False
 OUTPUT_FILE=output_maze.txt
+=======
+WIDTH=30
+HEIGHT=19
+ENTRY= 0,
+#  test comment
+exit=6,6
+perfect=False
+OUTPUT_FILE=maze.txt
+cdjjdd
+
+>>>>>>> Stashed changes

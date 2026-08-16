@@ -6,13 +6,13 @@ install:
 	$(PYTHON) -m venv $(VENV)
 	$(BIN)/pip install -r requirements.txt
 
-build: install
+build:
 	$(BIN)/python -m build
 
-run: install
+run:
 	$(BIN)/python a_maze_ing.py config.txt
 
-debug: install
+debug:
 	$(BIN)/python -m pdb a_maze_ing.py config.txt
 
 clean:
@@ -24,7 +24,7 @@ clean:
 	find . -type d -name "__pycache__" -exec rm -rf {} +
 	find . -type d -name ".mypy_cache" -exec rm -rf {} +
 
-lint: install
+lint:
 	$(BIN)/flake8 .
 	$(BIN)/mypy . --warn-return-any --warn-unused-ignores \
 	--ignore-missing-imports --disallow-untyped-defs \

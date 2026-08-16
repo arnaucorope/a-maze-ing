@@ -1,5 +1,5 @@
 from typing import Optional, cast, Any
-from pydantic import BaseModel, Field, field_validator, model_validator
+from pydantic import BaseModel, Field, field_validator, model_validator, ValidationError
 
 VALID_KEYS = {
     "WIDTH",
@@ -15,8 +15,8 @@ VALID_KEYS = {
 class MazeConfig(BaseModel):
     """Validate the maze configuration."""
 
-    width: int = Field(..., gt=0, alias="WIDTH")
-    height: int = Field(..., gt=0, alias="HEIGHT")
+    width: int = Field(..., gt=0, le=30, alias="WIDTH")
+    height: int = Field(..., gt=0, le=19, alias="HEIGHT")
     entry: tuple[int, int] = Field(..., alias="ENTRY")
     exit_: tuple[int, int] = Field(..., alias="EXIT")
     output_file: str = Field(..., min_length=1, alias="OUTPUT_FILE")
@@ -102,5 +102,17 @@ def config_parser(filename: str) -> MazeConfig:
 
     try:
         return MazeConfig(**cast(dict[str, Any], data))
-    except ValueError as e:
-        raise ValueError(f"Invalid configuration: {e}") from e
+    except ValidationError as e:
+        error = e.errors()[0]
+
+        field = error["loc"][0]
+        error_type = error["type"]
+
+        if error_type == "int_parsing":
+            raise ValueError(f"{field} should be a valid interger") from None
+        if error_type == "bool_parsing":
+            raise ValueError(f"{field} should be True or False.") from None
+        if error_type == "missing":
+            raise ValueError(f"{field} is required.") from None
+
+        raise ValueError(f"{field} has an invalid value.") from None
