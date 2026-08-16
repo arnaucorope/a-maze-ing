@@ -62,7 +62,6 @@ The final application can generate both perfect and imperfect mazes, switch betw
 ├── a_maze_ing.py          # Main interactive application
 ├── config.txt             # Default maze configuration
 ├── config_parsing.py      # Pydantic-based configuration parser
-├── mazegen-1.0.0-py3-none-any.whl  # Reusable mazegen package
 ├── mazegen-1.0.0.tar.gz            # Reusable mazegen source package
 ├── exporter.py            # Hex grid and solution exporter
 ├── app/
