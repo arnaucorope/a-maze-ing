@@ -12,11 +12,35 @@ class MazeAlgorithm(ABC):
     """Define the interface for maze generation algorithms."""
     @abstractmethod
     def generate(self, maze: "MazeGenerator") -> Iterator[list[list[int]]]:
+        """Generate a maze step by step.
+
+        Args:
+            maze: MazeGenerator instance containing the maze state.
+
+        Yields:
+            The current maze grid after each generation step.
+        """
         pass
 
 
 class DFSAlgorithm(MazeAlgorithm):
+    """Generate mazes using the Depth-First Search algorithm."""
+
     def generate(self, maze: "MazeGenerator") -> Iterator[list[list[int]]]:
+        """Generate a maze using depth-first search.
+
+        The algorithm explores one path as far as possible before
+        backtracking to the previous cell.
+
+        Args:
+            maze: MazeGenerator instance containing the maze state.
+
+        Yields:
+            The current maze grid after each wall is opened.
+
+        Raises:
+            RuntimeError: If some reachable cells remain unvisited.
+        """
         visited: set[tuple[int, int]] = set()
         stack: list[tuple[int, int]] = []
         rng = random.Random(maze.seed)
@@ -43,8 +67,13 @@ class DFSAlgorithm(MazeAlgorithm):
                 maze._open_wall(current, direction, next_cell)
                 visited.add(next_cell)
                 stack.append(next_cell)
+
+                # Yield the grid so the caller can display
+                # the current state of the maze.
                 yield maze._grid
             else:
+                # No unvisited neighbours remain, so backtrack
+                # to the previous cell.
                 stack.pop()
         expected_cells = (maze.width * maze.height - len(maze._pattern_cells))
         if len(visited) != expected_cells:
@@ -52,7 +81,24 @@ class DFSAlgorithm(MazeAlgorithm):
 
 
 class PrimAlgorithm(MazeAlgorithm):
+    """Generate mazes using Prim's algorithm."""
+
     def generate(self, maze: "MazeGenerator") -> Iterator[list[list[int]]]:
+        """Generate a maze using a randomized Prim's algorithm.
+
+        The algorithm keeps a frontier of possible connections
+        between visited and unvisited cells and randomly selects
+        one at each step.
+
+        Args:
+            maze: MazeGenerator instance containing the maze state.
+
+        Yields:
+            The current maze grid after each wall is opened.
+
+        Raises:
+            RuntimeError: If some reachable cells remain unvisited.
+        """
         rng = random.Random(maze.seed)
         visited: set[tuple[int, int]] = set()
         frontier: list[
@@ -67,6 +113,8 @@ class PrimAlgorithm(MazeAlgorithm):
         start_x, start_y = start
         neighbours = maze._get_neighbours(start_x, start_y)
 
+        # Add the starting cell's valid neighbours to
+        # the frontier.
         for direction, neighbour in neighbours:
             if neighbour not in maze._pattern_cells:
                 frontier.append((start, direction, neighbour))
@@ -74,6 +122,9 @@ class PrimAlgorithm(MazeAlgorithm):
             option = rng.choice(frontier)
             frontier.remove(option)
             current, direction, neighbour = option
+
+            # Ignore frontier connections leading to cells
+            # that have already been visited.
             if neighbour in visited:
                 continue
             maze._open_wall(current, direction, neighbour)
@@ -81,12 +132,17 @@ class PrimAlgorithm(MazeAlgorithm):
             neighbour_x, neighbour_y = neighbour
             new_neighbours = maze._get_neighbours(neighbour_x, neighbour_y)
 
+            # Add the new cell's unvisited neighbours
+            # to the frontier.
             for new_direction, new_neighbour in new_neighbours:
                 if (
                         new_neighbour not in visited
                         and new_neighbour not in maze._pattern_cells
                         ):
                     frontier.append((neighbour, new_direction, new_neighbour))
+
+            # Yield the grid so the caller can display
+            # the current state of the maze.
             yield maze._grid
 
         expected_cells = (maze.width * maze.height - len(maze._pattern_cells))

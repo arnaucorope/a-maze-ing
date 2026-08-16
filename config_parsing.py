@@ -13,7 +13,7 @@ VALID_KEYS = {
 
 
 class MazeConfig(BaseModel):
-    """Validate the maze configuration."""
+    """Validate the maze configuration and parameters"""
 
     width: int = Field(..., gt=0, le=30, alias="WIDTH")
     height: int = Field(..., gt=0, le=19, alias="HEIGHT")
@@ -26,6 +26,18 @@ class MazeConfig(BaseModel):
     @field_validator("entry", "exit_", mode="before")
     @classmethod
     def validate_coord(cls, value: str) -> tuple[int, int]:
+        """Parse entry and exit coordinates from an 'x, y' string.
+
+        Args:
+            value: Coordinate string containing two integer values.
+
+        Returns:
+            The coordinates as an (x, y) tuple.
+
+        Raises:
+            ValueError: If the coordinates are not two valid integers.
+        """
+
         coord = value.split(",")
 
         if len(coord) == 2:
@@ -41,6 +53,16 @@ class MazeConfig(BaseModel):
 
     @model_validator(mode="after")
     def validate_limits(self) -> "MazeConfig":
+        """Check that entry and exit are inside the maze boundaries.
+
+        The entry and exit coordinates must also be different.
+
+        Returns:
+            The validated MazeConfig instance.
+
+        Raises:
+            ValueError: If coordinates are outside the maze or identical.
+        """
         en_x, en_y = self.entry
         ex_x, ex_y = self.exit_
 
@@ -60,7 +82,18 @@ class MazeConfig(BaseModel):
 
 
 def config_parser(filename: str) -> MazeConfig:
-    """Read config.txt and create a validated MazeConfig."""
+    """Read and validate a maze configuration file.
+
+    Args:
+        filename: Path to the configuration file.
+
+    Returns:
+        A validated MazeConfig instance.
+
+    Raises:
+        FileNotFoundError: If the configuration file does not exist.
+        ValueError: If the configuration contains invalid or missing data.
+    """
 
     data: dict[str, str] = {}
 
@@ -68,6 +101,8 @@ def config_parser(filename: str) -> MazeConfig:
         for i, line in enumerate(file, start=1):
             line = line.strip()
 
+            # Ignore empty lines and lines that do not start with
+            # one of the recognised configuration keys.
             if not line or not line.upper().startswith(("WIDTH", "HEIGHT",
                                                         "ENTRY",
                                                         "EXIT", "OUTPUT_FILE",
@@ -80,6 +115,8 @@ def config_parser(filename: str) -> MazeConfig:
 
             key, value = line.split("=", 1)
 
+            # Keys are case-insensitive and values may be surrounded
+            # by whitespace or quotes.
             key = key.strip().upper()
             value = value.strip().strip("\"'")
 
@@ -103,6 +140,9 @@ def config_parser(filename: str) -> MazeConfig:
     try:
         return MazeConfig(**cast(dict[str, Any], data))
     except ValidationError as e:
+        # Pydantic provides the validation error type and the
+        # field where the error occurred. These are used to replace
+        # Pydantic's default messages with simpler project messages.
         error = e.errors()[0]
 
         field = error["loc"][0]

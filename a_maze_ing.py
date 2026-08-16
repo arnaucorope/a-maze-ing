@@ -11,41 +11,56 @@ from exporter import export_grid
 
 
 def start_screen() -> None:
-    """Start the terminal alternate screen."""
-    # Entra en una pantalla alternativa.
-    # Todo lo que hagamos aquí queda aislado de la terminal normal.
+    """Start the application in an alternate terminal screen.
+
+    The alternate screen keeps the application output separate from
+    the user's normal terminal history.
+    """
+    # Switch to the alternate terminal screen.
+    # Everything displayed by the application is kept in this
+    # separate screen buffer.
     print("\033[?1049h", end="")
 
-    # Limpia la pantalla y coloca el cursor en 0,0.
+    # Clear the screen and move the cursor to the top-left corner.
     print("\033[2J\033[H", end="")
 
-    # Oculta el cursor.
+    # Hide the cursor while the application is running.
     print("\033[?25l", end="")
 
 
 def end_screen() -> None:
-    """Restore the normal terminal screen."""
-    # Muestra el cursor.
+    """Restore the normal terminal screen and show the cursor."""
+
+    # Show the cursor again before leaving the application.
     print("\033[?25h", end="")
 
-    # Vuelve a la pantalla normal.
+    # Leave the alternate screen and restore the normal terminal.
     print("\033[?1049l", end="")
 
 
 def get_key() -> str:
-    """Read one key without pressing Enter."""
+    """Read one key from the terminal without pressing Enter.
+    Returns the character pressed by the user."""
+
     fd = sys.stdin.fileno()
     old_settings = termios.tcgetattr(fd)
 
     try:
+        # Raw mode makes the terminal send each key immediately
+        # instead of waiting for the Enter key.
         tty.setraw(fd)
         return sys.stdin.read(1)
     finally:
+        # Restore the original terminal settings after reading
+        # the key so the terminal does not remain in raw mode.
         termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
 
 
 def clear_screen() -> None:
-    """Clear the current screen and move to 0,0."""
+    """Clear the terminal screen and move the cursor to the top-left."""
+
+    # \033[2J clears the screen.
+    # \033[H moves the cursor to the top-left corner.
     print("\033[2J\033[H", end="")
 
 
@@ -56,8 +71,17 @@ def draw_screen(
     show_solution: bool,
     renderer: TerminalRenderer,
 ) -> None:
-    """Draw the maze and menu."""
+    """Draw the maze, warnings, and menu on the terminal.
+
+    Args:
+        maze: MazeGenerator containing the current maze information.
+        grid: Current maze grid to render.
+        solution: List of walls representing the maze solution.
+        show_solution: Whether the shortest path should be displayed.
+        renderer: Terminal renderer used to display the maze."""
     clear_screen()
+
+    # Only pass the solution to the renderer when it should be visible.
     if show_solution:
         path = solution
     else:
@@ -70,6 +94,7 @@ def draw_screen(
         path,
         maze.get_pattern_cells(),
     )
+    # Display an error if the maze is too small for the 42 pattern.
     if not maze.pattern_fits:
         print()
         RED = "\033[31m"
@@ -80,6 +105,9 @@ def draw_screen(
                 f"{RED}✖ Error:{RESET} "
                 f"The maze is too small to fit the {YELLOW}42{RESET} pattern."
             )
+
+    # Display a warning if the configured entry was inside
+    # the 42 pattern and had to be moved.
     if maze.entry_moved:
         print()
         print("\033[93mWarning: Entry coordinates were inside "
@@ -108,7 +136,15 @@ def draw_screen(
 def fixed_maze(
     maze: MazeGenerator,
 ) -> tuple[list[list[int]], list[Wall]]:
-    """Generate a fixed maze."""
+    """Generate a complete maze and calculate its solution.
+
+    Args:
+        maze: MazeGenerator used to create the maze.
+
+    Returns:
+        A tuple containing the generated grid and its solution.
+    """
+
     grid = maze.generate()
     solution = maze.get_solution()
 
@@ -119,10 +155,21 @@ def animated_maze(
     maze: MazeGenerator,
     renderer: TerminalRenderer,
 ) -> tuple[list[list[int]], list[Wall]]:
-    """Generate and animate a maze."""
+    """Generate and display the maze and solution step by step.
+
+    Args:
+        maze: MazeGenerator used to create the maze.
+        renderer: Terminal renderer used to display each generation step.
+
+    Returns:
+        A tuple containing the completed grid and its solution.
+    """
+
     solution: list[Wall] = []
     grid: list[list[int]] = []
-    # Animación de la generación del maze
+
+    # Animate the maze generation by rendering every grid
+    # produced by generate_steps().
     for grid in maze.generate_steps():
         clear_screen()
 
@@ -136,7 +183,8 @@ def animated_maze(
 
         time.sleep(0.05)
 
-    # Animación de la solución
+    # Animate the solution by adding one direction at a time
+    # and redrawing the maze after each step.
     for direction in maze.solution_steps():
         solution.append(direction)
 
@@ -156,6 +204,8 @@ def animated_maze(
 
 
 def main() -> None:
+    """Load the configuration and run the interactive maze menu."""
+
     if len(sys.argv) != 2:
         print("Usage: python3 a_maze_ing.py config.txt")
         return
@@ -182,16 +232,16 @@ def main() -> None:
 
     running = True
 
-    # ---------------------------------------------------------
-    # Entramos en la pantalla alternativa.
-    # ---------------------------------------------------------
+    # Enter the alternate screen before starting the interactive
+    # application. The normal terminal contents remain untouched.
     start_screen()
 
     show_solution = True
     dfs = True
     renderer = TerminalRenderer()
     try:
-        # Primer maze
+        # Generate the first maze so that the application starts
+        # with a maze already displayed.
         grid, solution = fixed_maze(maze)
         export_grid(
             grid,
@@ -203,9 +253,8 @@ def main() -> None:
 
         while running:
 
-            # -------------------------------------------------
-            # Dibujamos siempre la pantalla completa.
-            # -------------------------------------------------
+            # Redraw the complete screen after every user action.
+            # This keeps the maze and menu in the same fixed position.
             draw_screen(
                 maze,
                 grid,
@@ -214,14 +263,9 @@ def main() -> None:
                 renderer,
             )
 
-            # -------------------------------------------------
-            # Esperamos una tecla.
-            # -------------------------------------------------
+            # Wait for one key without requiring Enter.
             option = get_key()
 
-            # -------------------------------------------------
-            # Procesamos la opción.
-            # -------------------------------------------------
             match option:
                 case "1":
                     maze.seed = random.randint(1, 100)
@@ -274,9 +318,8 @@ def main() -> None:
                     running = False
 
     finally:
-        # -----------------------------------------------------
-        # Pase lo que pase, restauramos la terminal.
-        # -----------------------------------------------------
+        # Always restore the normal terminal, even if an exception
+        # occurs while the application is running.
         end_screen()
 
 
