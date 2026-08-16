@@ -198,7 +198,7 @@ def main() -> None:
             maze.entry,
             maze.exit_,
             solution,
-            "output_maze.txt"
+            config.output_file
         )
 
         while running:
@@ -231,7 +231,7 @@ def main() -> None:
                             maze.entry,
                             maze.exit_,
                             solution,
-                            "output_maze.txt"
+                            config.output_file
                         )
                 case "2":
                     maze.seed = random.randint(1, 100)
@@ -241,7 +241,7 @@ def main() -> None:
                             maze.entry,
                             maze.exit_,
                             solution,
-                            "output_maze.txt"
+                            config.output_file
                         )
                 case "3":
                     dfs = not dfs
