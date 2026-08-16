@@ -1,4 +1,4 @@
 
-from .menu import show_menu
+from .renderer import TerminalRenderer
 
-__all__ = ["show_menu"]
+__all__ = ["TerminalRenderer"]

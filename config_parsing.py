@@ -110,6 +110,14 @@ def config_parser(filename: str) -> MazeConfig:
 
         if error_type == "int_parsing":
             raise ValueError(f"{field} should be a valid interger") from None
+        if error_type in ("greater_than", "less_than_equal"):
+            if field == "WIDTH":
+                raise ValueError("WIDTH should be greater than 0 "
+                                 "and less than or equal to 30.") from None
+
+            if field == "HEIGHT":
+                raise ValueError("HEIGHT should be greater than 0 "
+                                 "and less than or equal to 19.") from None
         if error_type == "bool_parsing":
             raise ValueError(f"{field} should be True or False.") from None
         if error_type == "missing":
