@@ -94,14 +94,42 @@ class MazeGenerator:
 
         self._open_wall(current, direction, neighbour)
         creates_open_3x3 = False
+        if current_y == neighbour_y:
+            possible_x = [
+                min(current_x, neighbour_x) - 1,
+                min(current_x, neighbour_x),
+            ]
+            possible_y = [
+                current_y - 2,
+                current_y - 1,
+                current_y,
+            ]
+        else:
+            possible_x = [
+                current_x - 2,
+                current_x - 1,
+                current_x,
+            ]
+            possible_y = [
+                min(current_y, neighbour_y) - 1,
+                min(current_y, neighbour_y),
+            ]
 
-        for start_y in range(self.height - 2):
-            for start_x in range(self.width - 2):
+        for start_y in possible_y:
+            for start_x in possible_x:
+                if not (
+                    0 <= start_x <= self.width - 3
+                    and 0 <= start_y <= self.height - 3
+                ):
+                    continue
+
                 if self._is_open_3x3(start_x, start_y):
                     creates_open_3x3 = True
-                    break
+                        break
+
             if creates_open_3x3:
                 break
+
         self._grid[current_y][current_x] = current_value
         self._grid[neighbour_y][neighbour_x] = neighbour_value
 
