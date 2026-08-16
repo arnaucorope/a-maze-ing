@@ -17,6 +17,7 @@ A terminal-based maze generator, solver, visualizer, and reusable Python package
 * [Team and Project Management](#team-and-project-management)
 * [Tools](#tools)
 * [Resources](#resources)
+* [Bonus Features](#bonus-features)
 * [License](#license)
 
 ## Description
@@ -278,66 +279,98 @@ The path uses the **final** entry and exit positions, including any automatic re
 
 ## Reusable Code
 
-# A-Maze-Ing
+The reusable component of this project is the **`mazegen` package**, which contains the core maze-generation logic independently from the configuration parser, terminal renderer, exporter, and interactive application.
 
-### 1. What part of your code is reusable, and how?
-The most valuable part of this project is the **core maze engine**, which has been isolated from the execution script and delivered as a pre-compiled source distribution package (`.tar.gz`). 
+The package is provided as a source distribution at the root of the repository:
 
-Any external developer can take this archive file and install it into their independent Python projects. By importing `mazegen`, they can reuse the `MazeGenerator` class to create perfect or imperfect mathematical grids, extract matrix data, or plug it into different custom solvers without rewriting the core algorithms from scratch.
-
----
-
-### 2. How to Set Up and Install the Library From Scratch
-
-Since the `.tar.gz` package is already pre-built and included in the delivery, an external user only needs to run the following commands to install and test the library:
-
-#### Step 1: Create the Virtual Environment
-Run the automated Makefile command to set up a clean, isolated Python virtual environment:
-```bash
-make install
+```text
+mazegen-1.0.0.tar.gz
 ```
-This command creates the .venv/ directory and prepares the environment parameters.
-#### Step 2: Activate the Virtual Environment
-Before installing the package, enter the newly created virtual environment:
+
+### Installation
+
+Create and activate a virtual environment:
+
 ```bash
+python3 -m venv .venv
 source .venv/bin/activate
 ```
-> *(Your terminal prompt will now show (.venv) at the beginning, confirming you are safely inside the isolated environment).*
 
-#### Step 3: Install the Pre-built Package via pip
+Install the package directly with `pip`:
 
-Install the delivered .tar.gz archive directly into your active virtual environment using pip:
 ```bash
-pip install mazegen-0.1.0.tar.gz
+python -m pip install ./mazegen-1.0.0.tar.gz
 ```
->  *(Note: Replace mazegen-0.1.0.tar.gz with the exact filename of the tar archive present in your repository).*
 
----
-### 3. Implementation Example (How to use it)
-Once the package is installed, create an independent testing file named main.py and paste the following clean code inside it:
+Once installed, `MazeGenerator` can be imported from any Python project:
+
+```python
+from mazegen import MazeGenerator
+```
+
+### Basic usage
 
 ```python
 from mazegen import MazeGenerator
 
-def main():
-    maze = MazeGenerator(10, 10, (0, 0), (9, 9), True, "42")
-    maze.generate()
+maze = MazeGenerator(
+    width=10,
+    height=10,
+    entry=(0, 0),
+    exit_=(9, 9),
+    perfect=False,
+    seed=42,
+)
 
-    with open("output_maze.txt", "w") as f:
-        f.write("\n".join("".join(f"{cell:X}" for cell in row) for row in maze._grid) + "\n")
+grid = maze.generate()
 
-if __name__ == "__main__":
-    main()
-```         
-#### Run the test script:
-To trigger the generator and write the final file, execute:
-```bash
-python3 main.py
+for row in grid:
+    print("".join(f"{cell:X}" for cell in row))
 ```
-You can check that the file output_maze.txt has been successfully created with the hexadecimal grid matrix by running:
-```bash
-cat output_maze.txt
+
+`generate()` returns the generated maze structure as a two-dimensional list of integers. Each integer represents the walls of one cell using a four-bit wall representation.
+
+The returned grid can therefore be reused directly by another project, such as a Pac-Man-like game, or converted to hexadecimal as shown in the example above.
+
+### Custom parameters
+
+The generator accepts custom parameters including:
+
+| Parameter | Description |
+| --- | --- |
+| `width` | Number of maze columns |
+| `height` | Number of maze rows |
+| `entry` | Entry coordinate as `(x, y)` |
+| `exit_` | Exit coordinate as `(x, y)` |
+| `perfect` | Selects perfect or imperfect maze generation |
+| `seed` | Optional seed for reproducible generation |
+| `algorithm` | Generation algorithm (`"dfs"` or `"prim"`) |
+
+For example, Prim can be selected with:
+
+```python
+maze = MazeGenerator(
+    width=20,
+    height=15,
+    entry=(0, 0),
+    exit_=(19, 14),
+    perfect=False,
+    seed=42,
+    algorithm="prim",
+)
 ```
+
+### Rebuilding the package
+
+All elements required to rebuild the reusable package are included in the repository.
+
+Run:
+
+```bash
+make build
+```
+
+The standard Python build process creates the package distributions inside `dist/`. The source distribution submitted with the project is copied to the repository root as `mazegen-1.0.0.tar.gz`.
 
 ## Team and Project Management
 
@@ -467,6 +500,17 @@ AI tools, mainly **ChatGPT**, were used as a learning and review assistant durin
 * assisting with the wording and organization of project documentation, including this README.
 
 AI was used to support understanding and review rather than replace the team's implementation work. The final architecture, code integration, feature decisions, testing, and project validation were performed by the team.
+
+## Bonus Features
+
+In addition to the mandatory requirements, the project implements several advanced features:
+
+- **Multiple generation algorithms** — the user can switch between randomized DFS and Prim.
+- **Animated maze generation** — maze construction can be displayed step by step using Python generators and `yield`.
+- **Animated solution path** — the shortest path can also be displayed progressively.
+- **Dead-end removal** — imperfect mazes are processed to remove dead ends while preventing fully open `3 x 3` areas.
+- **Color gambling** — an animated terminal effect that continuously changes the maze colors.
+- **Automatic entry/exit relocation** — if the configured entry or exit overlaps the `42` pattern, it is automatically moved to the nearest valid cell.
 
 ## License
 

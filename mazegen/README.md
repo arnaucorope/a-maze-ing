@@ -1,62 +1,127 @@
-*This project has been created as part of the 42 curriculum by acoromin and sayala-c*
+# mazegen
 
-# A-Maze-Ing
+`mazegen` is the reusable maze-generation package developed for the **A-Maze-ing** project.
 
-### 1. What part of your code is reusable, and how?
-The most valuable part of this project is the **core maze engine**, which has been isolated from the execution script and delivered as a pre-compiled source distribution package (`.tar.gz`). 
+It contains the core maze-generation logic independently from the configuration parser, terminal renderer, exporter, and interactive application, so it can be installed and imported into another Python project.
 
-Any external developer can take this archive file and install it into their independent Python projects. By importing `mazegen`, they can reuse the `MazeGenerator` class to create perfect or imperfect mathematical grids, extract matrix data, or plug it into different custom solvers without rewriting the core algorithms from scratch.
+## Installation
 
----
+The package is distributed as:
 
-### 2. How to Set Up and Install the Library From Scratch
-
-Since the `.tar.gz` package is already pre-built and included in the delivery, an external user only needs to run the following commands to install and test the library:
-
-#### Step 1: Create the Virtual Environment
-Run the automated Makefile command to set up a clean, isolated Python virtual environment:
-```bash
-make install
+```text
+mazegen-1.0.0.tar.gz
 ```
-This command creates the .venv/ directory and prepares the environment parameters.
-#### Step 2: Activate the Virtual Environment
-Before installing the package, enter the newly created virtual environment:
+
+From the directory containing the archive, install it with:
+
 ```bash
+python -m pip install ./mazegen-1.0.0.tar.gz
+```
+
+Using a virtual environment is recommended:
+
+```bash
+python3 -m venv .venv
 source .venv/bin/activate
+python -m pip install ./mazegen-1.0.0.tar.gz
 ```
-> *(Your terminal prompt will now show (.venv) at the beginning, confirming you are safely inside the isolated environment).*
 
-#### Step 3: Install the Pre-built Package via pip
+## Import
 
-Install the delivered .tar.gz archive directly into your active virtual environment using pip:
-```bash
-pip install dist/mazegen-0.1.0.tar.gz
+Once installed:
+
+```python
+from mazegen import MazeGenerator
 ```
->  *(Note: Replace mazegen-0.1.0.tar.gz with the exact filename of the tar archive present in your repository).*
 
----
-### 3. Implementation Example (How to use it)
-Once the package is installed, create an independent testing file named main.py and paste the following clean code inside it:
+## Basic usage
 
 ```python
 from mazegen import MazeGenerator
 
-def main():
-    maze = MazeGenerator(10, 10, (0, 0), (9, 9), True, "42")
-    maze.generate()
+maze = MazeGenerator(
+    width=10,
+    height=10,
+    entry=(0, 0),
+    exit_=(9, 9),
+    perfect=False,
+    seed=42,
+)
 
-    with open("output_maze.txt", "w") as f:
-        f.write("\n".join("".join(f"{cell:X}" for cell in row) for row in maze._grid) + "\n")
-
-if __name__ == "__main__":
-    main()
-```         
-#### Run the test script:
-To trigger the generator and write the final file, execute:
-```bash
-python3 main.py
+grid = maze.generate()
 ```
-You can check that the file output_maze.txt has been successfully created with the hexadecimal grid matrix by running:
-```bash
-cat output_maze.txt
 
+`generate()` returns the generated maze as a two-dimensional list of integers.
+
+Each integer represents the walls of one cell using a four-bit mask:
+
+| Wall | Value |
+| --- | ---: |
+| North | `1` |
+| East | `2` |
+| South | `4` |
+| West | `8` |
+
+A newly created cell has value `15` (`0xF`), meaning that all four walls are closed.
+
+## Hexadecimal grid
+
+The generated structure can be converted directly to hexadecimal:
+
+```python
+for row in grid:
+    print("".join(f"{cell:X}" for cell in row))
+```
+
+This representation can be reused by another project, for example as the map structure of a Pac-Man-like game.
+
+## Custom parameters
+
+`MazeGenerator` accepts the following parameters:
+
+| Parameter | Description |
+| --- | --- |
+| `width` | Number of maze columns |
+| `height` | Number of maze rows |
+| `entry` | Entry coordinate as `(x, y)` |
+| `exit_` | Exit coordinate as `(x, y)` |
+| `perfect` | `True` for a perfect maze, `False` for an imperfect maze |
+| `seed` | Optional seed for reproducible generation |
+| `algorithm` | Generation algorithm: `"dfs"` or `"prim"` |
+
+Example using Prim:
+
+```python
+maze = MazeGenerator(
+    width=20,
+    height=15,
+    entry=(0, 0),
+    exit_=(19, 14),
+    perfect=False,
+    seed=42,
+    algorithm="prim",
+)
+
+grid = maze.generate()
+```
+
+## Accessing a solution
+
+After generating the maze, a shortest valid path is available with:
+
+```python
+solution = maze.get_solution()
+```
+
+## Step-by-step generation
+
+For applications that need each generation state, such as animations or custom visualizers:
+
+```python
+for grid in maze.generate_steps():
+    pass
+```
+
+## Authors
+
+Developed by **acoromin** and **sayala-c** as part of the 42 curriculum.
