@@ -59,24 +59,29 @@ The final application can generate both perfect and imperfect mazes, switch betw
 
 ```text
 .
-├── a_maze_ing.py          # Main interactive application
-├── config.txt             # Default maze configuration
-├── config_parsing.py      # Pydantic-based configuration parser
-├── mazegen-1.0.0.tar.gz            # Reusable mazegen source package
-├── exporter.py            # Hex grid and solution exporter
+├── a_maze_ing.py              # Main interactive application
+├── config.txt                 # Default maze configuration
+├── config_parsing.py          # Pydantic-based configuration parser
+├── exporter.py                # Hex grid and solution exporter
+├── mazegen-1.0.0.tar.gz       # Installable reusable mazegen package
+│
 ├── app/
 │   ├── __init__.py
-│   ├── menu.py
-│   └── renderer.py        # Terminal maze renderer
+│   └── renderer.py            # Terminal maze renderer
+│
 ├── mazegen/
 │   ├── __init__.py
-│   ├── algorithms.py      # DFS and Prim implementations
-│   ├── maze_generator.py  # Maze generation, solving and maze rules
-│   └── wall.py            # Wall bit flags
+│   ├── algorithms.py          # DFS and Prim implementations
+│   ├── maze_generator.py      # Maze generation, solving and maze rules
+│   ├── wall.py                # Wall bit flags
+│   └── README.md              # Documentation for the reusable package
+│
+├── .gitignore
+├── LICENSE.md
 ├── Makefile
-├── pyproject.toml         # Package/build configuration
-├── requirements.txt
-└── LICENSE.md
+├── pyproject.toml             # Package/build configuration
+├── README.md
+└── requirements.txt
 ```
 
 ## Instructions
