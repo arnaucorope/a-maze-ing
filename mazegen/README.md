@@ -39,16 +39,25 @@ from mazegen import MazeGenerator
 ```python
 from mazegen import MazeGenerator
 
-maze = MazeGenerator(
-    width=10,
-    height=10,
-    entry=(0, 0),
-    exit_=(9, 9),
-    perfect=False,
-    seed=42,
-)
 
-grid = maze.generate()
+def main() -> None:
+    maze = MazeGenerator(
+        width=10,
+        height=10,
+        entry=(0, 0),
+        exit_=(9, 9),
+        perfect=False,
+        seed=42,
+    )
+
+    grid = maze.generate()
+
+    for row in grid:
+        print("".join(f"{cell:X}" for cell in row))
+
+
+if __name__ == "__main__":
+    main()
 ```
 
 `generate()` returns the generated maze as a two-dimensional list of integers.

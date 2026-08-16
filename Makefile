@@ -16,13 +16,13 @@ debug:
 	$(BIN)/python -m pdb a_maze_ing.py config.txt
 
 clean:
-	rm output_maze.txt
 	rm -rf mazegen.egg-info
 	rm -rf $(VENV)
 	rm -rf dist
 	rm -rf build
 	find . -type d -name "__pycache__" -exec rm -rf {} +
 	find . -type d -name ".mypy_cache" -exec rm -rf {} +
+	rm output_maze.txt
 
 lint:
 	$(BIN)/flake8 .
