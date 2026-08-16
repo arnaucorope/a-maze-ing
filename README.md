@@ -308,7 +308,7 @@ source .venv/bin/activate
 
 Install the delivered .tar.gz archive directly into your active virtual environment using pip:
 ```bash
-pip install dist/mazegen-0.1.0.tar.gz
+pip install mazegen-0.1.0.tar.gz
 ```
 >  *(Note: Replace mazegen-0.1.0.tar.gz with the exact filename of the tar archive present in your repository).*
 
