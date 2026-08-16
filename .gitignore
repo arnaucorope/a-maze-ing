@@ -22,3 +22,7 @@ dist/
 
 # Editor settings
 .vscode/
+
+# Neovim/Vim swap files
+*.swp
+*.swo

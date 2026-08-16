@@ -117,6 +117,8 @@ class TerminalRenderer:
 
                 display_y = y * 2 + 1
                 display_x = x * 2 + 1
+                if (x, y) in pattern_42:
+                    display_grid[display_y][display_x] = self.pattern_42
 
                 display_grid[display_y - 1][display_x - 1] = wall
                 display_grid[display_y - 1][display_x + 1] = wall

@@ -6,6 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "mazegen"
 version = "1.0.0"
 description = "Reusable maze generator and solver"
+readme = "mazegen/README.md"
 authors = [
     {name = "Arnau Corominas"},
     {name = "Sara Ayala"}
@@ -14,3 +15,6 @@ requires-python = ">=3.10"
 
 [tool.setuptools]
 packages = ["mazegen"]
+
+[tool.setuptools.package-data]
+mazegen = ["README.md"]

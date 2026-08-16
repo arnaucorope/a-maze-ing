@@ -1,5 +1,11 @@
 from typing import Optional, cast, Any
-from pydantic import BaseModel, Field, field_validator, model_validator, ValidationError
+from pydantic import (
+    BaseModel,
+    Field,
+    ValidationError,
+    field_validator,
+    model_validator,
+)
 
 VALID_KEYS = {
     "WIDTH",
