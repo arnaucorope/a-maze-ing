@@ -1,9 +1,6 @@
 WIDTH=15
 HEIGHT=15    
 ENTRY= 0,0
-#  test comment
 exit=6,6
 perfect=False
-OUTPUT_FILE=maze.txit
-cdjjdd
-
+OUTPUT_FILE=output_maze.txt

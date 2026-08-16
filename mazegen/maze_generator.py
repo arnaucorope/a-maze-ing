@@ -125,7 +125,7 @@ class MazeGenerator:
 
                 if self._is_open_3x3(start_x, start_y):
                     creates_open_3x3 = True
-                        break
+                    break
 
             if creates_open_3x3:
                 break
