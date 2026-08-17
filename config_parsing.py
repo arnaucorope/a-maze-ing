@@ -109,10 +109,7 @@ def config_parser(filename: str) -> MazeConfig:
 
             # Ignore empty lines and lines that do not start with
             # one of the recognised configuration keys.
-            if not line or not line.upper().startswith(("WIDTH", "HEIGHT",
-                                                        "ENTRY",
-                                                        "EXIT", "OUTPUT_FILE",
-                                                        "PERFECT", "SEED")):
+            if not line or line.startswith("#"):
                 continue
 
             if "=" not in line:
