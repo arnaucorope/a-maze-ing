@@ -123,22 +123,24 @@ def config_parser(filename: str) -> MazeConfig:
             key = key.strip().upper()
             value = value.strip().strip("\"'")
 
-            if key not in VALID_KEYS:
-                continue
-
             if not key:
                 raise ValueError(
                     f"Invalid configuration at line {i}: "
                     "empty key."
                 )
 
+            if key not in VALID_KEYS:
+                raise ValueError(
+                        f"Unknown configuration key '{key}' at line {i}."
+                )
+
             if key in data:
                 raise ValueError(f"Duplicate configuration key '{key}'.")
 
-            data[key] = value
-
-            if value == "" or not value:
+            if not value:
                 raise ValueError(f"Missing value in {key}")
+
+            data[key] = value
 
     try:
         return MazeConfig(**cast(dict[str, Any], data))
