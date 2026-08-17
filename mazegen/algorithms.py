@@ -12,14 +12,6 @@ class MazeAlgorithm(ABC):
     """Define the interface for maze generation algorithms."""
     @abstractmethod
     def generate(self, maze: "MazeGenerator") -> Iterator[list[list[int]]]:
-        """Generate a maze step by step.
-
-        Args:
-            maze: MazeGenerator instance containing the maze state.
-
-        Yields:
-            The current maze grid after each generation step.
-        """
         pass
 
 

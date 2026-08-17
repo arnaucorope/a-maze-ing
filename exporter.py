@@ -2,6 +2,14 @@ from mazegen import Wall
 
 
 def grid_to_hex(grid: list[list[int]]) -> str:
+    """Convert the maze grid into hexadecimal text.
+
+    Args:
+        grid: Maze grid represented as integer values.
+
+    Returns:
+        The hexadecimal representation of the grid.
+    """
     lines: list[str] = []
 
     for row in grid:
@@ -17,6 +25,14 @@ def grid_to_hex(grid: list[list[int]]) -> str:
 
 
 def solution_to_text(solution: list[Wall]) -> str:
+    """Convert the maze solution into directional text.
+
+    Args:
+        solution: List of wall directions forming the solution path.
+
+    Returns:
+        The solution represented using N, E, S, and W characters.
+    """
     text = ""
 
     for direction in solution:
@@ -39,6 +55,15 @@ def export_grid(
         solution: list[Wall],
         filename: str,
         ) -> None:
+    """Export the maze grid, coordinates, and solution to a file.
+
+    Args:
+        grid: Maze grid represented as integer values.
+        entry: Entry coordinates of the maze.
+        exit_: Exit coordinates of the maze.
+        solution: List of wall directions forming the solution path.
+        filename: Path of the output file.
+    """
     hex_grid = grid_to_hex(grid)
     solution_text = solution_to_text(solution)
     entry_x, entry_y = entry

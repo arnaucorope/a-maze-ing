@@ -58,6 +58,12 @@ COLORS = [
 
 
 class TerminalRenderer:
+    """Render the maze and its elements in the terminal.
+
+    Handles the visual representation of walls, the 42 pattern,
+    entry, exit, and solution path using terminal colors.
+    """
+
     def __init__(self) -> None:
         self.space = "   "
         self.entry_char = f"{GREEN}███{RESET}"
@@ -70,7 +76,15 @@ class TerminalRenderer:
         self,
         grid: list[list[int]],
     ) -> list[list[str]]:
-        """Create an empty visual grid for rendering the maze."""
+        """Create an empty display grid based on the maze size.
+
+        Args:
+            grid: Maze grid used to determine the display dimensions.
+
+        Returns:
+            An empty grid ready to be rendered.
+        """
+
         height = len(grid)
         width = len(grid[0])
 
