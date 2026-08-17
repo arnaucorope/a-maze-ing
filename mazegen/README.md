@@ -51,13 +51,29 @@ def main() -> None:
     )
 
     grid = maze.generate()
+    solution = maze.get_solution()
+
+    solution_text = "".join(direction.name[0] for direction in solution)
+
+    output = ""
 
     for row in grid:
-        print("".join(f"{cell:X}" for cell in row))
+        output += "".join(f"{cell:X}" for cell in row) + "\n"
+
+    output += "\n"
+    output += f"{maze.entry[0]},{maze.entry[1]}\n"
+    output += f"{maze.exit_[0]},{maze.exit_[1]}\n"
+    output += solution_text + "\n"
+
+    print(output, end="")
+
+    with open("maze_example.txt", "w", encoding="utf-8") as file:
+        file.write(output)
 
 
 if __name__ == "__main__":
     main()
+
 ```
 
 `generate()` returns the generated maze as a two-dimensional list of integers.
