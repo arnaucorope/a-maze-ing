@@ -67,7 +67,7 @@ def main() -> None:
 
     print(output, end="")
 
-    with open("maze_example.txt", "w", encoding="utf-8") as file:
+    with open("maze_output.txt", "w", encoding="utf-8") as file:
         file.write(output)
 
 

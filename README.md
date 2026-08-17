@@ -313,19 +313,42 @@ from mazegen import MazeGenerator
 ```python
 from mazegen import MazeGenerator
 
-maze = MazeGenerator(
-    width=10,
-    height=10,
-    entry=(0, 0),
-    exit_=(9, 9),
-    perfect=False,
-    seed=42,
-)
 
-grid = maze.generate()
+def main() -> None:
+    maze = MazeGenerator(
+        width=10,
+        height=10,
+        entry=(0, 0),
+        exit_=(9, 9),
+        perfect=False,
+        seed=42,
+    )
 
-for row in grid:
-    print("".join(f"{cell:X}" for cell in row))
+    grid = maze.generate()
+    solution = maze.get_solution()
+
+    solution_text = "".join(direction.name[0] for direction in solution)
+
+    output = ""
+
+    for row in grid:
+        output += "".join(f"{cell:X}" for cell in row) + "\n"
+
+    output += "\n"
+    output += f"{maze.entry[0]},{maze.entry[1]}\n"
+    output += f"{maze.exit_[0]},{maze.exit_[1]}\n"
+    output += solution_text + "\n"
+
+    print(output, end="")
+
+    with open("maze_output.txt", "w", encoding="utf-8") as file:
+        file.write(output)
+
+
+if __name__ == "__main__":
+    main()
+
+
 ```
 
 `generate()` returns the generated maze structure as a two-dimensional list of integers. Each integer represents the walls of one cell using a four-bit wall representation.
