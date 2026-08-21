@@ -1,4 +1,5 @@
-from typing import Optional, cast, Any
+from typing import Any, Optional, cast
+
 from pydantic import (
     BaseModel,
     Field,
@@ -73,14 +74,16 @@ class MazeConfig(BaseModel):
         ex_x, ex_y = self.exit_
 
         if en_x < 0 or en_x >= self.width or en_y < 0 or en_y >= self.height:
-            raise ValueError(f"Entry coordinates are outside of the maze "
-                             f"limits: coordinates must be smaller "
-                             f"that {self.height} and {self.width}.")
+            raise ValueError("Entry coordinates are outside of the maze "
+                             "limits: coordinates must be greater or equal "
+                             f"than (0, 0) or smaller that ({self.height}, "
+                             f"{self.width}).")
 
         if ex_x < 0 or ex_x >= self.width or ex_y < 0 or ex_y >= self.height:
             raise ValueError(f"Exit coordinates are outside of the maze "
-                             f"limits: coordinates must be smaller "
-                             f"that {self.height} and {self.width}.")
+                             "limits: coordinates must be greater or equal "
+                             f"than (0, 0) or smaller that ({self.height}, "
+                             f"{self.width}).")
 
         if en_x == ex_x and en_y == ex_y:
             raise ValueError("Entry and Exit coordinates must be different.")
@@ -150,9 +153,11 @@ def config_parser(filename: str) -> MazeConfig:
         # Pydantic's default messages with simpler project messages.
         error = e.errors()[0]
 
+        if not error["loc"]:
+            message = str(error["msg"]).removeprefix("Value error, ")
+            raise ValueError(message) from None
         field = error["loc"][0]
         error_type = error["type"]
-
         if error_type == "int_parsing":
             raise ValueError(f"{field} should be a valid interger") from None
         if error_type in ("greater_than", "less_than_equal"):

@@ -18,7 +18,7 @@ def start_screen() -> None:
     """
     # Switch to the alternate terminal screen.
     # Everything displayed by the application is kept in this
-    # separate screen buffer.
+    # separate screen.
     print("\033[?1049h", end="")
 
     # Clear the screen and move the cursor to the top-left corner.
@@ -216,7 +216,9 @@ def main() -> None:
         print(f"Error: configuration file '{sys.argv[1]}' not found.")
         print("Usage: python3 a_maze_ing.py config.txt")
         return
-
+    except PermissionError:
+        print(f"Error: cannot read configuration file '{sys.argv[1]}'.")
+        return
     except ValueError as e:
         print(f"Configuration error: {e}")
         return
@@ -231,30 +233,34 @@ def main() -> None:
     )
 
     running = True
+    show_solution = True
+    dfs = True
+    renderer = TerminalRenderer()
+    error_message: str | None = None
 
     # Enter the alternate screen before starting the interactive
     # application. The normal terminal contents remain untouched.
     start_screen()
 
-    show_solution = True
-    dfs = True
-    renderer = TerminalRenderer()
     try:
         # Generate the first maze so that the application starts
         # with a maze already displayed.
         grid, solution = fixed_maze(maze)
-        export_grid(
-            grid,
-            maze.entry,
-            maze.exit_,
-            solution,
-            config.output_file
-        )
+
+        try:
+            export_grid(
+                grid,
+                maze.entry,
+                maze.exit_,
+                solution,
+                config.output_file,
+            )
+        except OSError as e:
+            error_message = f"Error writing output file: {e}"
+            running = False
 
         while running:
-
             # Redraw the complete screen after every user action.
-            # This keeps the maze and menu in the same fixed position.
             draw_screen(
                 maze,
                 grid,
@@ -266,37 +272,87 @@ def main() -> None:
             # Wait for one key without requiring Enter.
             option = get_key()
 
+            # Reload the configuration only when generating
+            # a new maze.
+            if option == "1" or option == "2":
+                algorithm = maze.algorithm
+
+                try:
+                    config = config_parsing.config_parser(sys.argv[1])
+                except FileNotFoundError:
+                    error_message = (
+                        f"Error: configuration file "
+                        f"'{sys.argv[1]}' not found."
+                    )
+                    break
+                except PermissionError:
+                    error_message = (
+                        f"Error: cannot read configuration file "
+                        f"'{sys.argv[1]}'."
+                    )
+                    break
+                except ValueError as e:
+                    error_message = f"Configuration error: {e}"
+                    break
+
+                maze = MazeGenerator(
+                    config.width,
+                    config.height,
+                    config.entry,
+                    config.exit_,
+                    config.perfect,
+                    config.seed,
+                )
+
+                # Keep the algorithm selected from the menu.
+                maze.algorithm = algorithm
+
             match option:
                 case "1":
                     maze.seed = random.randint(1, 100)
                     grid, solution = fixed_maze(maze)
-                    export_grid(
+
+                    try:
+                        export_grid(
                             grid,
                             maze.entry,
                             maze.exit_,
                             solution,
-                            config.output_file
+                            config.output_file,
                         )
+                    except OSError as e:
+                        error_message = f"Error writing output file: {e}"
+                        break
+
                 case "2":
                     maze.seed = random.randint(1, 100)
                     grid, solution = animated_maze(maze, renderer)
-                    export_grid(
+
+                    try:
+                        export_grid(
                             grid,
                             maze.entry,
                             maze.exit_,
                             solution,
-                            config.output_file
+                            config.output_file,
                         )
+                    except OSError as e:
+                        error_message = f"Error writing output file: {e}"
+                        break
+
                 case "3":
                     dfs = not dfs
                     if not dfs:
                         maze.algorithm = "prim"
                     else:
                         maze.algorithm = "dfs"
+
                 case "4":
                     show_solution = not show_solution
+
                 case "5":
                     renderer.change_colors()
+
                 case "6":
                     update = 0.005
                     for i in range(300):
@@ -314,6 +370,7 @@ def main() -> None:
                             time.sleep(update)
                         else:
                             time.sleep(0.005)
+
                 case "7":
                     running = False
 
@@ -321,6 +378,9 @@ def main() -> None:
         # Always restore the normal terminal, even if an exception
         # occurs while the application is running.
         end_screen()
+
+    if error_message is not None:
+        print(error_message)
 
 
 if __name__ == "__main__":

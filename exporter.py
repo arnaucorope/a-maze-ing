@@ -69,13 +69,10 @@ def export_grid(
     entry_x, entry_y = entry
     exit_x, exit_y = exit_
 
-    try:
-        with open(filename, "w", encoding="utf-8") as file:
-            file.write(hex_grid)
-            file.write("\n\n")
-            file.write(f"{entry_x},{entry_y}\n")
-            file.write(f"{exit_x},{exit_y}\n")
-            file.write(solution_text)
-            file.write("\n")
-    except OSError as error:
-        print(f"Error writing output file: {error}")
+    with open(filename, "w", encoding="utf-8") as file:
+        file.write(hex_grid)
+        file.write("\n\n")
+        file.write(f"{entry_x},{entry_y}\n")
+        file.write(f"{exit_x},{exit_y}\n")
+        file.write(solution_text)
+        file.write("\n")

@@ -1,3 +1,5 @@
+*Developed by **acoromin** and **sayala-c** as part of the 42 curriculum.*
+
 # mazegen
 
 `mazegen` is the reusable maze-generation package developed for the **A-Maze-ing** project.
