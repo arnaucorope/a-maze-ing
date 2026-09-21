@@ -1,5 +1,3 @@
-*Developed by **acoromin** and **sayala-c** as part of the 42 curriculum.*
-
 # mazegen
 
 `mazegen` is the reusable maze-generation package developed for the **A-Maze-ing** project.
@@ -151,4 +149,4 @@ for grid in maze.generate_steps():
 
 ## Authors
 
-Developed by **acoromin** and **sayala-c** as part of the 42 curriculum.
+Developed jointly by **Arnau Corominas Pérez (acoromin)** and **Sara Ayala (sayala-c)** as part of the 42 curriculum.
