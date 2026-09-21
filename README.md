@@ -167,9 +167,9 @@ Run `make install` before commands that use the virtual environment.
 
 ## Authors and contributions
 
-Developed jointly by **acoromin (Arnau Corominas)** and **sayala-c (Sara Ayala)** as part of the 42 curriculum.
+Developed jointly by **Arnau Corominas Pérez (acoromin)** and **Sara Ayala (sayala-c)** as part of the 42 curriculum.
 
-- **acoromin:** reusable package architecture, grid and wall representation, generation algorithms, imperfect-maze logic, generator-based animation, BFS integration, export, and part of the renderer.
+- **Arnau Corominas Pérez (acoromin):** reusable package architecture, grid and wall representation, generation algorithms, imperfect-maze logic, generator-based animation, BFS integration, export, and part of the renderer.
 - **sayala-c:** configuration parsing and validation, entry/exit relocation, much of the renderer, terminal colors and interaction, and application integration.
 - **Shared:** architecture and integration decisions, packaging, Makefile, dependencies, licensing, documentation, and manual testing.
 
